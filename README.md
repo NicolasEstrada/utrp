@@ -1,4 +1,4 @@
 utrp
 ====
 
-Urban Transit Routing Problem - UFSM Advanced Artificial Inteligence
+Urban Transit Routing Problem - UTFSM Advanced Artificial Inteligence
