@@ -1,4 +1,4 @@
-/**  Programa principal.  
+/**  Main utrp program.  
  *
  * Nurse Scheduling Problem with Simulated Annealing in C++
  * 
@@ -170,12 +170,14 @@ int main(int argc, char* argv[]){
     */
     for (i = 0; i < MAXITER; i++)
     {
-        data.iterateSol();
-        if (data.current.fo < data.best.fo)
-            data.copyCurrentToBest();
-        cout << " HILL CLIMBING ITERATION: " << i << endl;
-        cout << " (*) CurrentFO: " << data.current.fo << endl;
-        cout << " (*) BestFO:    " << data.best.fo << endl;
+        if (i%10 == 0){
+            data.iterateSol();
+            if (data.current.fo < data.best.fo)
+                data.copyCurrentToBest();
+            cout << " HILL CLIMBING ITERATION: " << i << endl;
+            cout << " (*) CurrentFO: " << data.current.fo << endl;
+            cout << " (*) BestFO:    " << data.best.fo << endl;
+        }
     }
 
     data.printData();
