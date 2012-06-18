@@ -137,10 +137,10 @@ void Data::setData(int n_nodes, int n_links){
 	for (i = 0; i < nNodes*nNodes; i++)
 		demandtable[i] = 0;
 
-    current.sol = new int [nNodes*nNodes];
-    best.sol = new int [nNodes*nNodes];
-    aux.sol = new int [nNodes*nNodes];
-    for (i = 0; i < nNodes*nNodes; i++){
+    current.sol = new int [nNodes*nTours];
+    best.sol = new int [nNodes*nTours];
+    aux.sol = new int [nNodes*nTours];
+    for (i = 0; i < nNodes*nTours; i++){
         current.sol[i] = 0;
         best.sol[i] = 0;
         aux.sol[i] = 0;

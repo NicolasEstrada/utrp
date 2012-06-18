@@ -3,6 +3,7 @@
 
 #define SWAPROWPROB 70
 #define SWAPCOLPROB 30
+#define NODEPROB 90
 
 using namespace std;
 
@@ -48,6 +49,18 @@ int isAccepted(double delta, double t){
 int moveRand()
 {
 	if ((rand()%100 + 1) < SWAPROWPROB)
+        return 0;
+    else
+        return 1;
+}
+
+/** randChoice()
+    *
+    *
+    *
+    */
+int randChoice(){
+    if ((rand()%100 + 1) > NODEPROB)
         return 0;
     else
         return 1;

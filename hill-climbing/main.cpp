@@ -19,7 +19,7 @@
 
 using namespace std;
 
-#define MAXITER 1000
+#define MAXITER 5
 
 int main(int argc, char* argv[]){
 
@@ -34,7 +34,7 @@ int main(int argc, char* argv[]){
     data = Data();
     
     int newSeed;
-    //newSeed = rand();
+    // newSeed = rand();
     
     
     if (argc != 5)
@@ -43,6 +43,7 @@ int main(int argc, char* argv[]){
         return 0;
     }
     
+    // random init with param seed
     newSeed = atoi(argv[4]);
     srand((unsigned)newSeed);
 
@@ -107,12 +108,14 @@ int main(int argc, char* argv[]){
                 else
                 {
                     data.insertTime(i, j, -1); 
-                    data.insertForbiddenLinks(i, j);
+                    //data.insertForbiddenLinks(i, j);
                 }
+                sline.clear();
                 //data.insertTime(k, i, aux);
                 //data.insertForbiddenLinks(k,i);
             }
         }
+        tt_file.close();
     }
     else{
         cout << "File couldn't be open." << endl;
@@ -138,6 +141,7 @@ int main(int argc, char* argv[]){
                 data.insertDemand(i, j, atoi(sline.c_str()));
             }
         }
+        td_file.close();
     }
     else{
         cout << "File couldn't be open." << endl;
@@ -152,19 +156,21 @@ int main(int argc, char* argv[]){
     /*
     **************** HILL CLIMBING ****************
     */
-    for (i = 0; i < MAXITER; i++)
+    data.printCurrent();
+    for (i = 0; i < 0; i++)
     {
-        if (i%10 == 0){
-            data.iterateSol();
-            if (data.current.fo < data.best.fo)
-                data.copyCurrentToBest();
-            cout << " HILL CLIMBING ITERATION: " << i << endl;
-            cout << " (*) CurrentFO: " << data.current.fo << endl;
-            cout << " (*) BestFO:    " << data.best.fo << endl;
-        }
+        data.printCurrent();
+        data.iterateSol();
+        if (data.current.fo < data.best.fo)
+            data.copyCurrentToBest();
+        cout << " HILL CLIMBING ITERATION: " << i << endl;
+        cout << " (*) CurrentFO: " << data.current.fo << endl;
+        cout << " (*) BestFO:    " << data.best.fo << endl;
     }
 
     data.printData();
+
+    delete p;
 
     return 0;
 }
