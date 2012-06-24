@@ -9,6 +9,8 @@
  * Implementation of UTRP considering standar input and output
  * to be analised posteriori.
  *  
+ * valgrind -v --tool=memcheck --leak-check=full ./utrp tp1.txt tt1.txt td1.txt 534765
+ *
  * @include: data.hpp
  * @see Data
  */
@@ -19,7 +21,7 @@
 
 using namespace std;
 
-#define MAXITER 5
+#define MAXITER 1000
 
 int main(int argc, char* argv[]){
 
@@ -157,15 +159,17 @@ int main(int argc, char* argv[]){
     **************** HILL CLIMBING ****************
     */
     data.printCurrent();
-    for (i = 0; i < 0; i++)
+    for (i = 0; i < MAXITER; i++)
     {
-        data.printCurrent();
+        //data.printCurrent();
         data.iterateSol();
-        if (data.current.fo < data.best.fo)
+        if (data.current.fo > data.best.fo)
             data.copyCurrentToBest();
-        cout << " HILL CLIMBING ITERATION: " << i << endl;
-        cout << " (*) CurrentFO: " << data.current.fo << endl;
-        cout << " (*) BestFO:    " << data.best.fo << endl;
+        if (i%100 == 0){
+            cout << " HILL CLIMBING ITERATION: " << i << endl;
+            cout << " (*) CurrentFO: " << data.current.fo << endl;
+            cout << " (*) BestFO:    " << data.best.fo << endl;
+        }
     }
 
     data.printData();

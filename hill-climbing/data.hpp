@@ -87,6 +87,12 @@ class Data {
         int tourBegin(int tour);
         int tourEnd(int tour);
         int previousNode(int tour, int node);
+        int indexNode(int tour, int node);
+
+        int shortestRoute(void);
+        void cleanRoute(int route);
+        int inEntireRed(int node);
+        int missingNode(void);
 
         void printCurrent(void);
         void printData(void);
@@ -243,6 +249,7 @@ void Data::insertAllowedNodes(int node, int allowed_node){
     * 
     */
 void Data::generateSol(void){
+    // FIXME: add all connecting graph condition
     int i, j = 1, k, t = 0, valid = 0;
     current.fo = 0;
     // For each tour define covered nodes
@@ -250,31 +257,65 @@ void Data::generateSol(void){
         // Max length of route
         for (k = 0; k < nNodes; k++){
             // If node not asigned and random probability, search new node
-            if (randChoice()){
-                // Initial route node, only the first time per route
-                if (!t)
-                    t = nRand(nNodes);
-                while(!valid){
-                    j = nRand(nNodes);
-                    if ((isConnected(t, j)) && !(alreadyExists(i, j))){
-                        valid = 1;
-                    }
-                    else{
-                        if (isFinished(i, t))
-                            k = nNodes;
-                            break;
-                    }
+            // Initial route node, only the first time per route
+            if (!t)
+                t = nRand(nNodes);
+            while(!valid){
+                j = nRand(nNodes);
+                if ((isConnected(t, j)) && !(alreadyExists(i, j)) && (j != indexNode(i, t))){
+                    valid = 1;
                 }
-                if (valid){
-                    current.sol[indexSol(i,t)] = j;
-                    current.fo += timetable[indexTables(t, j)];
-                    t = j;
+                else{
+                    if (isFinished(i, t)){
+                        k = nNodes;
+                        break;
+                    }
                 }
             }
+            if (valid){
+                current.sol[indexSol(i,t)] = j;
+                current.fo += timetable[indexTables(t, j)];
+                t = j;
+            }
+
             valid = 0;
         }
         t = 0;
     }
+
+    int m = missingNode();
+    while(m){
+        int r = shortestRoute();
+        cleanRoute(r);
+        for (k = 0; k < nNodes; k++){
+            // If node not asigned and random probability, search new node
+            // Initial route node, only the first time per route
+            if (!t)
+                t = m;
+            while(!valid){
+                j = nRand(nNodes);
+                if ((isConnected(t, j)) && !(alreadyExists(r, j)) && (j != indexNode(r, t))){
+                    valid = 1;
+                }
+                else{
+                    if (isFinished(r, t)){
+                        k = nNodes;
+                        break;
+                    }
+                }
+            }
+            if (valid){
+                current.sol[indexSol(r,t)] = j;
+                current.fo += timetable[indexTables(t, j)];
+                t = j;
+            }
+
+            valid = 0;
+        }
+        t = 0;
+        m = missingNode();
+    }
+
     copyCurrentToBest();
 }
 
@@ -299,7 +340,7 @@ void Data::iterateSol(void){
             current.sol[indexSol(route, pre)] = beg;
     }
     else{
-        cout << "To define more operators" << endl;
+        //cout << "To define more operators" << endl;
         /*
         route = nRand(nTours);
         while(!found){
@@ -345,7 +386,7 @@ void Data::refreshFO(void){
         for (j = 1; j <= nNodes; j++){
             if (current.sol[indexSol(i,j)] > 0){
                 // FIXME: nTours
-                current.fo += timetable[indexTables(current.sol[indexSol(i,j)], j)];
+                current.fo += timetable[indexTables(j, current.sol[indexSol(i,j)])];
             }
         }
     }
@@ -454,7 +495,7 @@ int Data::isFinished(int route, int node){
         int a = (*it2).first;
         int b = (*it2).second;
         if (a == node)
-            if (!alreadyExists(route, b))
+            if ((!alreadyExists(route, b)) && (indexNode(route, node) != b))
                 return 0;
     }
     return 1;
@@ -524,6 +565,68 @@ int Data::previousNode(int tour, int node){
     return 0;
 }
 
+/**
+    *
+    */
+int Data::indexNode(int tour, int node){
+
+    for (int i = 1; i <= nNodes; i++)
+        if (current.sol[indexSol(tour, i)] == node)
+            return i;
+    return 0;
+}
+
+/**
+    *
+    */
+int Data::shortestRoute(void){
+
+    int len_route = nNodes + 1;
+    int index_route = 0;
+    for (int i = 1; i <= nTours; i++)
+        if (tourLen(i) < len_route){
+            len_route = tourLen(i);
+            index_route = i;
+        }
+    return index_route;
+}
+
+/**
+    *
+    */
+void Data::cleanRoute(int route){
+
+    for (int i = 1; i <= nNodes; i++)
+        current.sol[indexSol(route, i)] = 0;
+}
+
+int Data::inEntireRed(int node){
+
+    for (int i = 1; i <= nTours; i++){
+        if (tourBegin(i) == node )
+            return 1;
+        for (int j = 1; j <= nNodes; j++)
+            if (current.sol[indexSol(i, j)] == node)
+                return 1;
+    }
+    return 0;
+}
+
+/**
+    *
+    */
+int Data::missingNode(void){
+
+    for (int i = 1; i <= nNodes; i++)
+        if (!inEntireRed(i))
+            return i;
+    return 0;
+
+}
+
+/**
+    *
+    */
 void Data::printCurrent(void){
     int i, j;
     cout << "----------- SOLUTIONS -------------" << endl;
@@ -592,6 +695,7 @@ void Data::printData(){
     cout << endl << "---------------------------" << endl;
     
     cout << "----------- SOLUTIONS -------------" << endl;
+    /******************************************************
     cout << "CURRENT FO: " << current.fo << endl;
     for (i = 1; i <= nTours; i++)
     {
@@ -606,6 +710,7 @@ void Data::printData(){
         cout << endl;
     }
     cout << endl;
+    ********************************************************/
     cout << "--- TOURS ---" << endl;
     for (i = 1; i <= nTours; i++){
         cout << current.tours[indexTour(i)];
@@ -613,11 +718,29 @@ void Data::printData(){
     }
     cout << endl << endl;
 
+    int allow = 0;
     cout << "----------- ALLOWED -------------" << endl;
-    for(it = allowed_nodes.begin(); it != allowed_nodes.end(); it++)
-             cout << *it << " ";
+    for(it2 = test.begin(); it2 != test.end(); it2++){
+        int a = (*it2).first;
+        int b = (*it2).second;
+        //cout << a << "| |" << b << endl;
+        if (allow == 0){
+            allow = a;
+            cout << a << ": ";
+        }
+        else{
+            if (allow == a){
+                cout << " - " << b ;
+            }
+            else{
+                allow = a;
+                cout << "," << endl << a << ": " << b << " - ";
+            }
+        }
+    }
     cout << endl;
-    
+
+    /**********************************************************    
     cout << "----------- ALLOWED TEST -------------" << endl;
     for(it2 = test.begin(); it2 != test.end(); it2++){
         int a = (*it2).first;
@@ -626,12 +749,15 @@ void Data::printData(){
         cout << endl;
     }
     cout << endl;
+    *********************************************************/
 
-    /*********************************************************
-    //cout << "BEST FO: " << best.fo << endl;
+    cout << "BEST FO: " << best.fo << endl;
     
-    for (i = 1; i <= nNodes; i++)
+    for (i = 1; i <= nTours; i++)
     {
+        cout << "Begin Node: " << tourBegin(i) << endl;
+        cout << "End Node: " << tourEnd(i) << endl;
+        cout << "Len Node: " << tourLen(i) << endl;
         for (j = 1; j <= nNodes; j++)
         {
             if (best.sol[indexSol(i, j)] < 0)
@@ -649,7 +775,6 @@ void Data::printData(){
             cout << best.tours[indexTour(i)];
         cout << "\t";
     }
-    **********************************************************/
     cout << endl;
 }
 
