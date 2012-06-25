@@ -3,7 +3,10 @@
 
 #define SWAPROWPROB 70
 #define SWAPCOLPROB 30
-#define NODEPROB 90
+#define INITNODEPROB 20
+#define ENDNODEPROB 40
+#define REPNODEPROB 60
+#define REMNODEPROB 100
 
 using namespace std;
 
@@ -60,10 +63,17 @@ int moveRand()
     *
     */
 int randChoice(){
-    if ((rand()%100 + 1) > NODEPROB)
+    int p = rand()%100 + 1;
+    if (p <= INITNODEPROB)
         return 0;
     else
-        return 1;
+        if (p <= ENDNODEPROB)
+            return 1;
+        else
+            if (p <= REPNODEPROB)
+                return 2;
+            else
+                return 3;
 }
 
 /** moveRand

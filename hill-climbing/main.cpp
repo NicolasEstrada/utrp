@@ -10,10 +10,28 @@
  * to be analised posteriori.
  *  
  * valgrind -v --tool=memcheck --leak-check=full ./utrp tp1.txt tt1.txt td1.txt 534765
+ * valgrind -v --tool=memcheck --leak-check=full --track-origins=yes ./utrp tp1.txt tt1.txt td1.txt 534765
  *
  * @include: data.hpp
  * @see Data
  */
+/*
+MAX_ITERS = 1000000
+----------- BEST SOLUTION -------------
+BEST FO: 157924
+9 -> 15 -> 7 -> 10 -> 8 -> 6 -> 3 -> 2
+12 -> 11 -> 10 -> 7 -> 15 -> 8 -> 6 -> 4 -> 5 -> 2 -> 1
+12 -> 11 -> 13 -> 14 -> 10 -> 8 -> 6 -> 4 -> 2
+
+real    1m38.574s
+user    1m27.737s
+sys 0m0.048s
+*/
+/*
+TODO:
+    - Consider demands.
+    - Consider transfers.
+*/
 
 #include <string>
 #include <list>
@@ -127,7 +145,6 @@ int main(int argc, char* argv[]){
     i = 1;
     j = 1;
 
-
     // Open time matrix (transport demand between nodes)
     td_file.open(argv[3]);
     if (!td_file.is_open())
@@ -151,7 +168,6 @@ int main(int argc, char* argv[]){
     }
 
     //data.printData();
-
     data.generateSol();  // Generates initial sol
     //data.copyCurrentToBest();
 
@@ -163,16 +179,17 @@ int main(int argc, char* argv[]){
     {
         //data.printCurrent();
         data.iterateSol();
-        if (data.current.fo > data.best.fo)
+        if (data.current.fo < data.best.fo)
             data.copyCurrentToBest();
-        if (i%100 == 0){
-            cout << " HILL CLIMBING ITERATION: " << i << endl;
-            cout << " (*) CurrentFO: " << data.current.fo << endl;
-            cout << " (*) BestFO:    " << data.best.fo << endl;
+        if (i%200 == 0){
+            //cout << " HILL CLIMBING ITERATION: " << i << endl;
+            //cout << " (*) CurrentFO: " << data.current.fo << endl;
+            //cout << " (*) BestFO:    " << data.best.fo << endl;
         }
     }
 
     data.printData();
+    data.printRoutes();
 
     delete p;
 
