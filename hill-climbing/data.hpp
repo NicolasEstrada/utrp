@@ -14,6 +14,7 @@
 #ifndef DATA_H_
 #define DATA_H_
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -37,7 +38,8 @@
 using namespace std;
 
 struct Solution{
-	double      fo;  //Objective function value
+	double      fo;  // Objective function value
+    int         pairs; // Uncovered demand node pairs
 	int         *sol;  // Solution: Designed tour in each node
     //int         *tours; // Numbers of buses by tour
 };
@@ -83,6 +85,7 @@ class Data {
         int isConnected(int node1, int node2);
         int isLinkedRoad(int node1, int node2, int node3);
         int alreadyExists(int route, int node, int opt = 0);
+        int existsWithoutBeg(int route, int node, int opt = 0);
         int isFinished(int route, int node, int opt = 0);
         int previousConnection(int route, int node, int opt = 0);
         int nextConnection(int route, int node, int opt = 0);
@@ -95,8 +98,8 @@ class Data {
 
         int shortestRoute(void);
         void cleanRoute(int route);
-        int inEntireRed(int node);
-        int missingNode(void);
+        int inEntireRed(int node, int opt = 0);
+        int missingNode(int opt = 0);
         int countMissingNode(void);
 
         void addInitNode(int route);
@@ -112,6 +115,8 @@ class Data {
         void printCurrent(void);
         void printData(void);
         void printRoutes(void);
+        void fileRoutes(char *path);
+        void fileRoutesLatex(char* path,  int seed);
 
         int indexTables(int node1, int node2);
         int indexSol(int tour, int node);
@@ -127,12 +132,15 @@ Data::Data(void){
     nBuses = MAX_BUSES;
     uncoverDemand = 0;
     current.fo = 0;
+    current.pairs = 0;
     current.sol = 0;
     //current.tours = 0;
     best.fo = 0;
+    best.pairs = 0;
     best.sol = 0;
     //best.tours = 0;
     aux.fo = 0;
+    aux.pairs = 0;
     aux.sol = 0;
     //aux.tours = 0;
 	timetable = NULL;
@@ -170,7 +178,7 @@ void Data::setData(int n_nodes, int n_links, int routes){
     nTours = routes;
     //nTours = (int) (n_nodes/TOURS_STOPS) + 1;
 
-    cout << "nTours: " << nTours << endl; 
+    //cout << "nTours: " << nTours << endl; 
 
 	timetable = new int [nNodes*nNodes];
 	for (i = 0; i < (nNodes*nNodes); i++)
@@ -276,7 +284,7 @@ void Data::generateSol(void){
             // Initial route node, only the first time per route
             if (!t)
                 t = nRand(nNodes);
-            while(!valid){
+            while(!valid){ 
                 j = nRand(nNodes);
                 if ((isConnected(t, j)) && !(alreadyExists(i, j)) && (j != indexNode(i, t))){
                     valid = 1;
@@ -331,6 +339,7 @@ void Data::generateSol(void){
         t = 0;
         m = missingNode();
     }
+
     refreshFO();
     copyCurrentToBest();
 }
@@ -523,12 +532,45 @@ int Data::isLinkedRoad(int node1, int node2, int node3){
     *
     */
 int Data::alreadyExists(int route, int node, int opt){
+    int i, auxi;
+    switch(opt){
+        case 0:
+            for (i = 1; i <= nNodes; i++){
+                    //if (current.sol[indexSol(route, i)] == node)
+                    auxi = current.sol[indexSol(route, i)];
+                    if  (auxi > 0)
+                        if (auxi == node || i == node)
+                            return 1;
+            }
+            return 0;
+
+        case 1:
+            for (i = 1; i <= nNodes; i++)
+                if (best.sol[indexSol(route, i)] == node)
+                    return 1;
+            return 0;
+
+        case 2:
+            for (i = 1; i <= nNodes; i++)
+                if (aux.sol[indexSol(route, i)] == node)
+                    return 1;
+            return 0;
+
+        default:
+            return 0;
+    }
+}
+
+/**
+    *
+    */
+int Data::existsWithoutBeg(int route, int node, int opt){
     int i;
     switch(opt){
         case 0:
             for (i = 1; i <= nNodes; i++)
-                    if (current.sol[indexSol(route, i)] == node)
-                        return 1;
+                if (current.sol[indexSol(route, i)] == node)
+                    return 1;
             return 0;
 
         case 1:
@@ -619,7 +661,6 @@ int Data::tourLen(int tour, int opt){
     }
 }
 
-
 /**
     *
     */
@@ -629,20 +670,20 @@ int Data::tourBegin(int tour, int opt){
         case 0:
             for (i = 1; i <= nNodes; i++)
                 if (current.sol[indexSol(tour, i)] > 0)
-                    if (!alreadyExists(tour, i, opt))
+                    if (!existsWithoutBeg(tour, i, opt))
                         return i;
             return 0;
 
         case 1:
             for (i = 1; i <= nNodes; i++)
                 if (best.sol[indexSol(tour, i)] > 0)
-                    if (!alreadyExists(tour, i, opt))
+                    if (!existsWithoutBeg(tour, i, opt))
                         return i;
             return 0;
         case 2:
             for (i = 1; i <= nNodes; i++)
                 if (aux.sol[indexSol(tour, i)] > 0)
-                    if (!alreadyExists(tour, i, opt))
+                    if (!existsWithoutBeg(tour, i, opt))
                         return i;
             return 0;
         default:
@@ -769,14 +810,41 @@ void Data::cleanRoute(int route){
 /**
     *
     */
-int Data::inEntireRed(int node){
+int Data::inEntireRed(int node, int opt){
 
-    for (int i = 1; i <= nTours; i++){
-        if (tourBegin(i) == node )
-            return 1;
-        for (int j = 1; j <= nNodes; j++)
-            if (current.sol[indexSol(i, j)] == node)
-                return 1;
+    switch (opt){
+        case 0:
+            for (int i = 1; i <= nTours; i++){
+                if (tourBegin(i, opt) == node )
+                    return 1;
+                for (int j = 1; j <= nNodes; j++)
+                    if (current.sol[indexSol(i, j)] == node)
+                        return 1;
+            }
+            return 0;
+
+        case 1:
+            for (int i = 1; i <= nTours; i++){
+                if (tourBegin(i, opt) == node )
+                    return 1;
+                for (int j = 1; j <= nNodes; j++)
+                    if (best.sol[indexSol(i, j)] == node)
+                        return 1;
+            }
+            return 0;
+
+        case 2:
+            for (int i = 1; i <= nTours; i++){
+                if (tourBegin(i, opt) == node )
+                    return 1;
+                for (int j = 1; j <= nNodes; j++)
+                    if (aux.sol[indexSol(i, j)] == node)
+                        return 1;
+            }
+            return 0;
+
+        default:
+            break;
     }
     return 0;
 }
@@ -784,10 +852,10 @@ int Data::inEntireRed(int node){
 /**
     *
     */
-int Data::missingNode(void){
+int Data::missingNode(int opt){
 
     for (int i = 1; i <= nNodes; i++)
-        if (!inEntireRed(i))
+        if (!inEntireRed(i, opt))
             return i;
     return 0;
 
@@ -921,17 +989,20 @@ int Data::getMinCost(int node1, int node2){
     cost = 0;
     for (int i = 1; i <= nTours; i++){
         cur = inRoute(i, node1, node2);
-        next = current.sol[indexSol(i, cur)];
-        while (cur && next){
-            t = timetable[indexTables(cur, next)];
-            cout << cur << " | " << next << " = " << t << endl;
-            cost += t;
-            cur = next;
+        //cout << i << " | " << cur << endl;
+        if (cur){
             next = current.sol[indexSol(i, cur)];
+            while (cur && next){
+                t = timetable[indexTables(cur, next)];
+                //cout << cur << " | " << next << " = " << t << endl;
+                cost += t;
+                cur = next;
+                next = current.sol[indexSol(i, cur)];
+            }
+            if ((cost < min_cost) && (cost != 0))
+                min_cost = cost;
+            cost = 0;
         }
-        if ((cost < min_cost) && (cost != 0))
-            min_cost = cost;
-        cost = 0;
     }
 
     if (min_cost == 10000000)
@@ -969,6 +1040,7 @@ int Data::getDemandFO(void){
         }
     }
     uncoverDemand = count;
+    current.pairs = count;
     //cout << "DEMAND FO: " << total << " | UNCOVER: " << count << endl;
     return total;
 }
@@ -1066,7 +1138,7 @@ void Data::printData(){
         cout << "\t";
     }
     cout << endl << endl;
-    ********************************************************/
+    
 
     int allow = 0;
     cout << "----------- ALLOWED -------------" << endl;
@@ -1089,6 +1161,7 @@ void Data::printData(){
         }
     }
     cout << endl;
+    ********************************************************/
 
     /**********************************************************    
     cout << "----------- ALLOWED TEST -------------" << endl;
@@ -1156,6 +1229,91 @@ void Data::printRoutes(void){
         }
         cout << endl;
     }
+}
+
+/** printRoutes
+    *
+    * This method prints all routes within best solution
+    *
+    * @return void
+    */
+void Data::fileRoutes(char* path){
+    int i, ind;
+    ofstream output, routput;
+    output.open(path, fstream::in | fstream::out | fstream::app);
+    ostringstream oss (ostringstream::out);
+    string s;
+    oss << path << ".resume";
+    s = oss.str();
+    cout << s << " OK ";
+    routput.open(s.c_str(), fstream::in | fstream::out | fstream::app);
+    oss.str("");
+
+    //output << "----------- BEST SOLUTION -------------" << endl;
+    output << "BEST FO: " << best.fo << endl;
+    routput << setprecision(3) << "BEST FO: " << best.fo;
+
+    float average = 0;
+
+    for (i = 1; i <= nTours; i++)
+    {
+        output << "| Route " << i << " |";
+        //output << " Begin Node: " << tourBegin(i, BEST);
+        //output << " End Node: " << tourEnd(i, BEST);
+        output << " Len Route: " << tourLen(i, BEST) << " [ ";
+        average += (float) tourLen(i, BEST);
+        ind = tourBegin(i, BEST);
+        output << ind;
+        while(ind){
+            ind = best.sol[indexSol(i, ind)];
+            if (ind != 0)
+                output << " -> " << ind;
+        }
+        output << " ]" << endl;
+    }
+    average /= nTours;
+    routput << setprecision(2) << "\t" << " | Avg Len: " << average << "\t";
+    routput << " | Mis Nodes: " << missingNode(BEST) << "\t";
+    routput << " | Mis 2Nodes DD: " << best.pairs << endl;
+    output.close();
+    routput.close();
+}
+
+/** printRoutes
+    *
+    * This method prints all routes within best solution
+    *
+    * @return void
+    */
+void Data::fileRoutesLatex(char* path, int seed){
+    int i;
+    ofstream routput;
+    ostringstream oss (ostringstream::out);
+    string s;
+    oss << path << ".resume.ltx";
+    s = oss.str();
+    cout << s << " OK ";
+    routput.open(s.c_str(), fstream::in | fstream::out | fstream::app);
+    oss.str("");
+
+    //output << "----------- BEST SOLUTION -------------" << endl;
+    //output << "BEST FO: " << best.fo << endl;
+
+    float average = 0;
+
+    for (i = 1; i <= nTours; i++)
+    {
+        average += (float) tourLen(i, BEST);
+        //ind = tourBegin(i, BEST);
+    }
+    average /= nTours;
+    routput << seed << " & " << nTours << " & ";
+    routput << setprecision(2) << average << " & ";
+    routput << missingNode(BEST) << " & ";
+    routput << best.pairs << " & ";
+    routput << setprecision(3) << best.fo << " \\\\ \\hline" << endl;
+
+    routput.close();
 }
 
 /** indexTables

@@ -57,9 +57,9 @@ int main(int argc, char* argv[]){
     // newSeed = rand();
     
     
-    if (argc != 5)
+    if (argc != 6)
     {
-        cout << "Incorrect format: ./utrp tpX.txt ttX.txt tdX.txt seed" << endl;
+        cout << "Incorrect format: ./utrp tpX.txt ttX.txt tdX.txt seed output" << endl;
         return 0;
     }
     
@@ -169,12 +169,11 @@ int main(int argc, char* argv[]){
 
     //data.printData();
     data.generateSol();  // Generates initial sol
-    //data.copyCurrentToBest();
 
     /*
     **************** HILL CLIMBING ****************
     */
-    data.printCurrent();
+    //data.printCurrent();
     for (i = 0; i < MAXITER; i++)
     {
         //data.printCurrent();
@@ -188,8 +187,10 @@ int main(int argc, char* argv[]){
         }
     }
 
-    data.printData();
-    data.printRoutes();
+    //data.printData();
+    //data.printRoutes();
+    //data.fileRoutes(argv[5]);
+    data.fileRoutesLatex(argv[5], newSeed);
 
     delete p;
 
