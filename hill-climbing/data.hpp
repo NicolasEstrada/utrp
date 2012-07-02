@@ -32,6 +32,7 @@
 #define CURRENT 0
 #define BEST 1
 #define AUX 2
+#define INIT 3
 #define MISSNODEPENALTY 100000
 #define ROUTECOST 1000
 
@@ -63,7 +64,7 @@ class Data {
         list<pair<int, int> > allowed;
         list<pair<int, int> > ::iterator it2;
 
-        Solution    current, best, aux;
+        Solution    current, best, aux, init;
         
         void setData(int n_nodes, int n_links, int routes);
         
@@ -74,10 +75,11 @@ class Data {
 
         void setTours(void);
 
-        void generateSol(void);
+        void generateSol(int copy = 1);
         void iterateSol(void);
         void refreshFO(void);
 
+        void copyCurrentToInit(void);
         void copyCurrentToBest(void);
         void copyCurrentToAux(void);
         void copyAuxToCurrent(void);
@@ -143,6 +145,9 @@ Data::Data(void){
     aux.pairs = 0;
     aux.sol = 0;
     //aux.tours = 0;
+    init.fo = 0;
+    init.pairs = 0;
+    init.sol = 0;
 	timetable = NULL;
 	demandtable = NULL;
 }
@@ -191,10 +196,12 @@ void Data::setData(int n_nodes, int n_links, int routes){
     current.sol = new int [nTours*nNodes];
     best.sol = new int [nTours*nNodes];
     aux.sol = new int [nTours*nNodes];
+    init.sol = new int [nTours*nNodes];
     for (i = 0; i < nTours*nNodes; i++){
         current.sol[i] = 0;
         best.sol[i] = 0;
         aux.sol[i] = 0;
+        init.sol[i] = 0;
     }
 
     /*
@@ -272,7 +279,7 @@ void Data::insertAllowedNodes(int node, int allowed_node){
     * Initialise sol
     * 
     */
-void Data::generateSol(void){
+void Data::generateSol(int copy){
     // FIXME: add all connecting graph condition
     int i, j = 1, k, t = 0, valid = 0;
     current.fo = 0;
@@ -341,7 +348,10 @@ void Data::generateSol(void){
     }
 
     refreshFO();
-    copyCurrentToBest();
+    if (copy){
+        copyCurrentToBest();
+        copyCurrentToInit();
+    }
 }
 
 
@@ -439,6 +449,23 @@ void Data::refreshFO(void){
     current.fo += getDemandFO();
 }
 
+/** copyCurrentToInit
+    *
+    * Copy current sol to initial.
+    * 
+    */
+void Data::copyCurrentToInit(void){
+    
+    init.fo = current.fo;
+    init.pairs = current.pairs;
+    for (int i = 0; i < nTours*nNodes; i++)
+        init.sol[i] = current.sol[i];
+    /*
+    for (int i = 0; i < nTours; i++)
+        best.tours[i] = current.tours[i];
+        */
+}
+
 /** copyCurrentToBest
     *
     * Copy current sol to best.
@@ -447,6 +474,7 @@ void Data::refreshFO(void){
 void Data::copyCurrentToBest(void){
     
     best.fo = current.fo;
+    best.pairs = current.pairs;
     for (int i = 0; i < nTours*nNodes; i++)
         best.sol[i] = current.sol[i];
     /*
@@ -463,6 +491,7 @@ void Data::copyCurrentToBest(void){
 void Data::copyCurrentToAux(void){
     
     aux.fo = current.fo;
+    aux.pairs = current.pairs;
     for (int i = 0; i < nTours*nNodes; i++)
         aux.sol[i] = current.sol[i];
     /*
@@ -556,6 +585,12 @@ int Data::alreadyExists(int route, int node, int opt){
                     return 1;
             return 0;
 
+        case 3:
+            for (i = 1; i <= nNodes; i++)
+                if (init.sol[indexSol(route, i)] == node)
+                    return 1;
+            return 0;
+
         default:
             return 0;
     }
@@ -582,6 +617,12 @@ int Data::existsWithoutBeg(int route, int node, int opt){
         case 2:
             for (i = 1; i <= nNodes; i++)
                 if (aux.sol[indexSol(route, i)] == node)
+                    return 1;
+            return 0;
+
+        case 3:
+            for (i = 1; i <= nNodes; i++)
+                if (init.sol[indexSol(route, i)] == node)
                     return 1;
             return 0;
 
@@ -656,6 +697,11 @@ int Data::tourLen(int tour, int opt){
                 if (aux.sol[indexSol(tour, i)] >0)
                     len += 1;
             return len;
+        case 3:
+            for (int i = 1; i <= nNodes; i++)
+                if (init.sol[indexSol(tour, i)] >0)
+                    len += 1;
+            return len;
         default:
             return 0;
     }
@@ -683,6 +729,12 @@ int Data::tourBegin(int tour, int opt){
         case 2:
             for (i = 1; i <= nNodes; i++)
                 if (aux.sol[indexSol(tour, i)] > 0)
+                    if (!existsWithoutBeg(tour, i, opt))
+                        return i;
+            return 0;
+        case 3:
+            for (i = 1; i <= nNodes; i++)
+                if (init.sol[indexSol(tour, i)] > 0)
                     if (!existsWithoutBeg(tour, i, opt))
                         return i;
             return 0;
@@ -718,6 +770,13 @@ int Data::tourEnd(int tour, int opt){
                         return i;
             return 0;
 
+        case 3:
+            for (int i = 1; i <= nNodes; i++)
+                if (init.sol[indexSol(tour, i)] == 0)
+                    if (alreadyExists(tour, i, opt))
+                        return i;
+            return 0;
+
         default:
             return 0;
     }
@@ -748,6 +807,12 @@ int Data::previousNode(int tour, int node, int opt){
                         return i;
             return 0;
 
+        case 3:
+            for (int i = 1; i <= nNodes; i++)
+                if (init.sol[indexSol(tour, i)] == node)
+                        return i;
+            return 0;
+
         default:
             return 0;
     }
@@ -774,6 +839,12 @@ int Data::indexNode(int tour, int node, int opt){
         case 2:
             for (int i = 1; i <= nNodes; i++)
                 if (aux.sol[indexSol(tour, i)] == node)
+                    return i;
+            return 0;
+
+        case 3:
+            for (int i = 1; i <= nNodes; i++)
+                if (init.sol[indexSol(tour, i)] == node)
                     return i;
             return 0;
 
@@ -839,6 +910,16 @@ int Data::inEntireRed(int node, int opt){
                     return 1;
                 for (int j = 1; j <= nNodes; j++)
                     if (aux.sol[indexSol(i, j)] == node)
+                        return 1;
+            }
+            return 0;
+
+        case 3:
+            for (int i = 1; i <= nTours; i++){
+                if (tourBegin(i, opt) == node )
+                    return 1;
+                for (int j = 1; j <= nNodes; j++)
+                    if (init.sol[indexSol(i, j)] == node)
                         return 1;
             }
             return 0;
@@ -1211,7 +1292,7 @@ void Data::printData(){
     */
 void Data::printRoutes(void){
     int i, ind;
-    cout << "----------- BEST SOLUTION -------------" << endl;
+    //cout << "----------- BEST SOLUTION -------------" << endl;
     cout << "BEST FO: " << best.fo << endl;
     for (i = 1; i <= nTours; i++)
     {
@@ -1221,13 +1302,13 @@ void Data::printRoutes(void){
         //cout << "Len Node: " << tourLen(i, BEST) << endl;
 
         ind = tourBegin(i, BEST);
-        cout << ind;
+        //cout << ind;
         while(ind){
             ind = best.sol[indexSol(i, ind)];
-            if (ind != 0)
-                cout << " -> " << ind;
+            //if (ind != 0)
+                //cout << " -> " << ind;
         }
-        cout << endl;
+        //cout << endl;
     }
 }
 
@@ -1301,6 +1382,19 @@ void Data::fileRoutesLatex(char* path, int seed){
 
     float average = 0;
 
+    for (i = 1; i <= nTours; i++)
+    {
+        average += (float) tourLen(i, INIT);
+        //ind = tourBegin(i, BEST);
+    }
+    average /= nTours;
+    routput << seed << " & " << nTours << " & ";
+    routput << setprecision(2) << average << " & ";
+    routput << missingNode(INIT) << " & ";
+    routput << init.pairs << " & ";
+    routput << setprecision(3) << init.fo << "i \\\\ \\hline" << endl;
+
+    average = 0;
     for (i = 1; i <= nTours; i++)
     {
         average += (float) tourLen(i, BEST);

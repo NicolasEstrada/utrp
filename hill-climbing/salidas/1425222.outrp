@@ -1,0 +1,50 @@
+BEST FO: 310835
+| Route 1 | Len Route: 7 [ 7 -> 15 -> 6 -> 4 -> 5 -> 2 -> 1 ]
+| Route 2 | Len Route: 12 [ 13 -> 14 -> 10 -> 11 -> 12 -> 4 -> 2 -> 3 -> 6 -> 8 -> 15 -> 9 ]
+BEST FO: 300565
+| Route 1 | Len Route: 7 [ 5 -> 4 -> 12 -> 11 -> 10 -> 14 -> 13 ]
+| Route 2 | Len Route: 9 [ 14 -> 10 -> 11 -> 12 -> 4 -> 2 -> 3 -> 6 -> 8 ]
+| Route 3 | Len Route: 9 [ 9 -> 15 -> 7 -> 10 -> 11 -> 12 -> 4 -> 2 -> 1 ]
+BEST FO: 320715
+| Route 1 | Len Route: 4 [ 4 -> 5 -> 2 -> 1 ]
+| Route 2 | Len Route: 11 [ 13 -> 14 -> 10 -> 11 -> 12 -> 4 -> 2 -> 3 -> 6 -> 8 -> 15 ]
+| Route 3 | Len Route: 8 [ 9 -> 15 -> 7 -> 10 -> 11 -> 12 -> 4 -> 2 ]
+| Route 4 | Len Route: 7 [ 3 -> 2 -> 5 -> 4 -> 12 -> 11 -> 10 ]
+BEST FO: 297080
+| Route 1 | Len Route: 2 [ 2 -> 1 ]
+| Route 2 | Len Route: 9 [ 13 -> 14 -> 10 -> 11 -> 12 -> 4 -> 2 -> 3 -> 6 ]
+| Route 3 | Len Route: 8 [ 9 -> 15 -> 7 -> 10 -> 11 -> 12 -> 4 -> 2 ]
+| Route 4 | Len Route: 9 [ 3 -> 2 -> 5 -> 4 -> 12 -> 11 -> 10 -> 14 -> 13 ]
+| Route 5 | Len Route: 6 [ 9 -> 15 -> 6 -> 8 -> 10 -> 13 ]
+BEST FO: 353245
+| Route 1 | Len Route: 3 [ 5 -> 2 -> 1 ]
+| Route 2 | Len Route: 12 [ 13 -> 14 -> 10 -> 11 -> 12 -> 4 -> 2 -> 3 -> 6 -> 8 -> 15 -> 9 ]
+| Route 3 | Len Route: 9 [ 9 -> 15 -> 7 -> 10 -> 11 -> 12 -> 4 -> 2 -> 1 ]
+| Route 4 | Len Route: 6 [ 2 -> 5 -> 4 -> 12 -> 11 -> 10 ]
+| Route 5 | Len Route: 6 [ 9 -> 15 -> 6 -> 8 -> 10 -> 13 ]
+| Route 6 | Len Route: 5 [ 15 -> 6 -> 4 -> 2 -> 3 ]
+BEST FO: 92825
+| Route 1 | Len Route: 12 [ 1 -> 2 -> 5 ]
+| Route 2 | Len Route: 5 [ 3 -> 6 -> 8 -> 15 -> 9 ]
+BEST FO: 117190
+| Route 1 | Len Route: 10 [ 4 -> 12 ]
+| Route 2 | Len Route: 9 [ 1 -> 2 ]
+| Route 3 | Len Route: 5 [ 5 -> 2 -> 3 -> 6 -> 15 ]
+BEST FO: 160440
+| Route 1 | Len Route: 10 [ 2 -> 5 ]
+| Route 2 | Len Route: 6 [ 1 -> 2 -> 5 -> 4 ]
+| Route 3 | Len Route: 8 [ 8 -> 6 ]
+| Route 4 | Len Route: 10 [ 7 -> 15 ]
+BEST FO: 198685
+| Route 1 | Len Route: 6 [ 9 -> 15 -> 6 -> 3 -> 2 -> 4 ]
+| Route 2 | Len Route: 9 [ 3 -> 6 -> 4 ]
+| Route 3 | Len Route: 8 [ 8 -> 6 ]
+| Route 4 | Len Route: 10 [ 6 -> 3 -> 2 ]
+| Route 5 | Len Route: 9 [ 3 -> 2 -> 1 ]
+BEST FO: 251530
+| Route 1 | Len Route: 8 [ 8 -> 6 -> 4 ]
+| Route 2 | Len Route: 7 [ 5 -> 4 ]
+| Route 3 | Len Route: 11 [ 3 -> 2 -> 5 ]
+| Route 4 | Len Route: 11 [ 1 -> 2 -> 3 ]
+| Route 5 | Len Route: 6 [ 9 -> 15 -> 6 ]
+| Route 6 | Len Route: 8 [ 5 -> 2 ]

@@ -29,7 +29,6 @@ sys 0m0.048s
 */
 /*
 TODO:
-    - Consider demands.
     - Consider transfers.
 */
 
@@ -40,6 +39,7 @@ TODO:
 using namespace std;
 
 #define MAXITER 1000
+#define MAXSTUCK 10
 
 int main(int argc, char* argv[]){
 
@@ -174,23 +174,36 @@ int main(int argc, char* argv[]){
     **************** HILL CLIMBING ****************
     */
     //data.printCurrent();
+    int racount = 0, rcount = 0, mcount = 0;
+    //data.printRoutes();
     for (i = 0; i < MAXITER; i++)
     {
         //data.printCurrent();
-        data.iterateSol();
-        if (data.current.fo < data.best.fo)
-            data.copyCurrentToBest();
-        if (i%200 == 0){
-            //cout << " HILL CLIMBING ITERATION: " << i << endl;
-            //cout << " (*) CurrentFO: " << data.current.fo << endl;
-            //cout << " (*) BestFO:    " << data.best.fo << endl;
+        if (racount > MAXSTUCK){
+            racount = 0;
+            srand(rand());
+            data.generateSol(0);
         }
+        else
+            data.iterateSol();
+        if (data.current.fo < data.best.fo){
+            data.copyCurrentToBest();
+            if (rcount > mcount){
+                mcount = rcount;
+                rcount = 0;
+                racount = 0;
+            }
+        }
+        racount++;
+        rcount++;
     }
+
+    cout << "Max Iters without improvement: " << mcount << endl;
 
     //data.printData();
     //data.printRoutes();
-    //data.fileRoutes(argv[5]);
-    data.fileRoutesLatex(argv[5], newSeed);
+    data.fileRoutes(argv[5]);
+    //data.fileRoutesLatex(argv[5], newSeed);
 
     delete p;
 

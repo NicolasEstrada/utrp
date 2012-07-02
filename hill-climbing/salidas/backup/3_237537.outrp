@@ -1,0 +1,6 @@
+BEST FO: 352565
+| Route 1 | Len Route: 4 [ 0 ]
+| Route 2 | Len Route: 7 [ 9 -> 15 -> 6 -> 3 -> 2 -> 5 -> 4 ]
+| Route 3 | Len Route: 7 [ 9 -> 15 -> 8 -> 10 -> 13 -> 11 -> 12 ]
+| Route 4 | Len Route: 2 [ 9 -> 15 ]
+| Route 5 | Len Route: 9 [ 9 -> 15 -> 7 -> 10 -> 8 -> 6 -> 3 -> 2 -> 5 ]
