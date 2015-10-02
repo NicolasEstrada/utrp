@@ -1,0 +1,149 @@
+BEST FO: 342695
+Max Iters without improvement: 0
+./utrp tp1.txt tt1.txt td1.txt 237537 ./salidas/237537.outrp
+BEST FO: 378710
+Max Iters without improvement: 0
+./utrp tp1.txt tt1.txt td1.txt 475074 ./salidas/475074.outrp
+BEST FO: 477660
+Max Iters without improvement: 6
+./utrp tp1.txt tt1.txt td1.txt 712611 ./salidas/712611.outrp
+BEST FO: 293410
+Max Iters without improvement: 0
+./utrp tp1.txt tt1.txt td1.txt 950148 ./salidas/950148.outrp
+BEST FO: 377525
+Max Iters without improvement: 1
+./utrp tp1.txt tt1.txt td1.txt 1187685 ./salidas/1187685.outrp
+BEST FO: 315975
+Max Iters without improvement: 0
+./utrp tp1.txt tt1.txt td1.txt 1425222 ./salidas/1425222.outrp
+BEST FO: 436295
+Max Iters without improvement: 0
+./utrp tp1.txt tt1.txt td1.txt 1662759 ./salidas/1662759.outrp
+BEST FO: 436995
+Max Iters without improvement: 21
+./utrp tp1.txt tt1.txt td1.txt 1900296 ./salidas/1900296.outrp
+BEST FO: 274260
+Max Iters without improvement: 0
+./utrp tp1.txt tt1.txt td1.txt 2137833 ./salidas/2137833.outrp
+BEST FO: 324620
+Max Iters without improvement: 0
+./utrp tp1.txt tt1.txt td1.txt 2375370 ./salidas/2375370.outrp
+BEST FO: 341845
+Max Iters without improvement: 7
+./utrp tp2.txt tt1.txt td1.txt 237537 ./salidas/237537.outrp
+BEST FO: 299730
+Max Iters without improvement: 7
+./utrp tp2.txt tt1.txt td1.txt 475074 ./salidas/475074.outrp
+BEST FO: 331545
+Max Iters without improvement: 2
+./utrp tp2.txt tt1.txt td1.txt 712611 ./salidas/712611.outrp
+BEST FO: 312150
+Max Iters without improvement: 10
+./utrp tp2.txt tt1.txt td1.txt 950148 ./salidas/950148.outrp
+BEST FO: 425800
+Max Iters without improvement: 11
+./utrp tp2.txt tt1.txt td1.txt 1187685 ./salidas/1187685.outrp
+BEST FO: 337790
+Max Iters without improvement: 12
+./utrp tp2.txt tt1.txt td1.txt 1425222 ./salidas/1425222.outrp
+BEST FO: 443430
+Max Iters without improvement: 0
+./utrp tp2.txt tt1.txt td1.txt 1662759 ./salidas/1662759.outrp
+BEST FO: 410435
+Max Iters without improvement: 50
+./utrp tp2.txt tt1.txt td1.txt 1900296 ./salidas/1900296.outrp
+BEST FO: 378365
+Max Iters without improvement: 7
+./utrp tp2.txt tt1.txt td1.txt 2137833 ./salidas/2137833.outrp
+BEST FO: 488380
+Max Iters without improvement: 6
+./utrp tp2.txt tt1.txt td1.txt 2375370 ./salidas/2375370.outrp
+BEST FO: 383710
+Max Iters without improvement: 34
+./utrp tp3.txt tt1.txt td1.txt 237537 ./salidas/237537.outrp
+BEST FO: 251355
+Max Iters without improvement: 4
+./utrp tp3.txt tt1.txt td1.txt 475074 ./salidas/475074.outrp
+BEST FO: 352165
+Max Iters without improvement: 72
+./utrp tp3.txt tt1.txt td1.txt 712611 ./salidas/712611.outrp
+BEST FO: 383460
+Max Iters without improvement: 51
+./utrp tp3.txt tt1.txt td1.txt 950148 ./salidas/950148.outrp
+BEST FO: 325745
+Max Iters without improvement: 30
+./utrp tp3.txt tt1.txt td1.txt 1187685 ./salidas/1187685.outrp
+BEST FO: 345790
+Max Iters without improvement: 24
+./utrp tp3.txt tt1.txt td1.txt 1425222 ./salidas/1425222.outrp
+BEST FO: 416455
+Max Iters without improvement: 3
+./utrp tp3.txt tt1.txt td1.txt 1662759 ./salidas/1662759.outrp
+BEST FO: 344080
+Max Iters without improvement: 0
+./utrp tp3.txt tt1.txt td1.txt 1900296 ./salidas/1900296.outrp
+BEST FO: 405365
+Max Iters without improvement: 22
+./utrp tp3.txt tt1.txt td1.txt 2137833 ./salidas/2137833.outrp
+BEST FO: 422315
+Max Iters without improvement: 7
+./utrp tp3.txt tt1.txt td1.txt 2375370 ./salidas/2375370.outrp
+BEST FO: 396080
+Max Iters without improvement: 2
+./utrp tp4.txt tt1.txt td1.txt 237537 ./salidas/237537.outrp
+BEST FO: 419305
+Max Iters without improvement: 7
+./utrp tp4.txt tt1.txt td1.txt 475074 ./salidas/475074.outrp
+BEST FO: 478635
+Max Iters without improvement: 107
+./utrp tp4.txt tt1.txt td1.txt 712611 ./salidas/712611.outrp
+BEST FO: 325575
+Max Iters without improvement: 141
+./utrp tp4.txt tt1.txt td1.txt 950148 ./salidas/950148.outrp
+BEST FO: 411825
+Max Iters without improvement: 63
+./utrp tp4.txt tt1.txt td1.txt 1187685 ./salidas/1187685.outrp
+BEST FO: 344550
+Max Iters without improvement: 19
+./utrp tp4.txt tt1.txt td1.txt 1425222 ./salidas/1425222.outrp
+BEST FO: 405090
+Max Iters without improvement: 3
+./utrp tp4.txt tt1.txt td1.txt 1662759 ./salidas/1662759.outrp
+BEST FO: 355930
+Max Iters without improvement: 0
+./utrp tp4.txt tt1.txt td1.txt 1900296 ./salidas/1900296.outrp
+BEST FO: 349900
+Max Iters without improvement: 22
+./utrp tp4.txt tt1.txt td1.txt 2137833 ./salidas/2137833.outrp
+BEST FO: 442815
+Max Iters without improvement: 55
+./utrp tp4.txt tt1.txt td1.txt 2375370 ./salidas/2375370.outrp
+BEST FO: 375870
+Max Iters without improvement: 105
+./utrp tp5.txt tt1.txt td1.txt 237537 ./salidas/237537.outrp
+BEST FO: 472735
+Max Iters without improvement: 122
+./utrp tp5.txt tt1.txt td1.txt 475074 ./salidas/475074.outrp
+BEST FO: 414440
+Max Iters without improvement: 98
+./utrp tp5.txt tt1.txt td1.txt 712611 ./salidas/712611.outrp
+BEST FO: 485975
+Max Iters without improvement: 46
+./utrp tp5.txt tt1.txt td1.txt 950148 ./salidas/950148.outrp
+BEST FO: 418295
+Max Iters without improvement: 87
+./utrp tp5.txt tt1.txt td1.txt 1187685 ./salidas/1187685.outrp
+BEST FO: 358860
+Max Iters without improvement: 15
+./utrp tp5.txt tt1.txt td1.txt 1425222 ./salidas/1425222.outrp
+BEST FO: 393340
+Max Iters without improvement: 0
+./utrp tp5.txt tt1.txt td1.txt 1662759 ./salidas/1662759.outrp
+BEST FO: 349735
+Max Iters without improvement: 4
+./utrp tp5.txt tt1.txt td1.txt 1900296 ./salidas/1900296.outrp
+BEST FO: 380135
+Max Iters without improvement: 22
+./utrp tp5.txt tt1.txt td1.txt 2137833 ./salidas/2137833.outrp
+BEST FO: 403875
+Max Iters without improvement: 2

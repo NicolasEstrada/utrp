@@ -1,0 +1,4 @@
+make all
+make debug
+valgrind -v --tool=memcheck --leak-check=full ./utrp tp1.txt tt1.txt td1.txt
+./utrp tp1.txt tt1.txt td1.txt
