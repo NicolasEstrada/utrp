@@ -21,7 +21,7 @@ int main(int argc, char* argv[]){
 
     int i = 1, k = 1, nodes, links, value;
 	string sline, token, bs = "\n";
-	char *p, sep[] = "\t";
+	char *p, sep[] = " ";
 	
     ifstream tp_file, tt_file, td_file;
     ofstream fout, report;
