@@ -27,31 +27,33 @@
 int main(int argc, const char * argv[]) {
     // main program, iterator and executor
     
-    int i = 1, k = 1, nodes = 0, links = 0, value;
-    string sline, token, bs = "\n";
+    int i = 1, k = 1, nodes = 0, links = 0, value, populationSize, seed, routes;
+    std::string sline, token, bs = "\n";
     char *p = nullptr, sep[] = " ";
     
-    ifstream tp_file, tt_file, td_file;
-    ofstream fout, report;
+    std::ifstream tp_file, tt_file, td_file;
+    std::ofstream fout, report;
     
-    int newSeed;
-    newSeed = rand();
-    srand((unsigned)newSeed);
-    
-    if (argc != 5)
+    if (argc != 8)
     {
-        cout << "Incorrect format: ./utrp tpX.txt ttX.txt tdX.txt outputFile" << endl;
+        std::cout << "Incorrect format: ./utrp tpX.txt ttX.txt tdX.txt outputFile nRoutes populationSize seed" << std::endl;
         return 0;
     }
     
     tp_file.open(argv[1]);
     if (!tp_file.is_open())
     {
-        cout << "File not found." << endl;
+        std::cout << "File not found." << std::endl;
         return 0;
     }
     
-    cout << "General Paramenters:" << endl;
+    std::cout << "General Paramenters:" << std::endl;
+
+    populationSize = atoi(argv[6]);
+    seed = atoi(argv[7]);
+    routes = atoi(argv[5]);
+
+    std::cout << "Seed: = " << seed << ", populationSize = " << populationSize << ", nRoutes = " << routes << std::endl;
     
     // Open parameters file (nodes, links)
     if (tp_file.is_open())
@@ -80,21 +82,27 @@ int main(int argc, const char * argv[]) {
         }
         tp_file.close();
         
-        cout << "Nodes: " << nodes << ", Links: " << links << endl;
+        std::cout << "Nodes: " << nodes << ", Links: " << links << std::endl;
     }
     else
     {
-        cout << "File couldn't be open." << endl;
+        std::cout << "File couldn't be open." << std::endl;
         return 0;
     }
+
+    Data data;
+    data = Data();
     
-    cout << "Time Matrix:" << endl;
+    data.setData(nodes, links, routes, populationSize, seed);
+    
+    data.printTime();
+    data.printDemand();
     
     // Open time matrix (transport time between allowed nodes)
     tt_file.open(argv[2]);
     if (!tt_file.is_open())
     {
-        cout << "File not found." << endl;
+        std::cout << "File not found." << std::endl;
         return 0;
     }
     
@@ -112,21 +120,19 @@ int main(int argc, const char * argv[]) {
             }
             
             p = strtok((char *)sline.c_str(), sep);
-            // while (p != NULL && k <= data.nNodes)
-            while (p != NULL && k <= nodes)
+            while (p != NULL && k <= data.nNodes)
+            // while (p != NULL && k <= nodes)
             {
                 if (*p == '-')
                 {
-                    // data.insertTime(k, i, -1);
+                    data.insertTime(k, i, -1);
                     // data.insertForbiddenLinks(k,i);
-                    cout << "-    ";
                 }
                 
                 else
                 {
                     value = atoi(p);
-                    // data.insertTime(k, i, value);
-                    cout << value << "    ";
+                    data.insertTime(k, i, value);
                 }
                 p = strtok(NULL, sep);
                 k++;
@@ -135,28 +141,26 @@ int main(int argc, const char * argv[]) {
                 p = strtok(NULL, sep);
             sline.clear();
             i++;
-            
-            cout << endl;
 
         }
         tt_file.close();
     }
     else
     {
-        cout << "File couldn't be open." << endl;
+        std::cout << "File couldn't be open." << std::endl;
         return 0;
     }
+
+    data.printTime();
     
     i = 1;
     // Open time matrix (transport demand between nodes)
     td_file.open(argv[3]);
     if (!td_file.is_open())
     {
-        cout << "File not found." << endl;
+        std::cout << "File not found." << std::endl;
         return 0;
     }
-
-    cout << endl << "Demand Matrix:" << endl;
     
     if (td_file.is_open())
     {
@@ -171,12 +175,11 @@ int main(int argc, const char * argv[]) {
             }
 
             p = strtok((char *)sline.c_str(), sep);
-            // while (p != NULL && k <= data.nNodes)
-            while (p != NULL && k <= nodes)
+            while (p != NULL && k <= data.nNodes)
+            //  while (p != NULL && k <= nodes)
             {
                 value = atoi(p);
-                // data.insertDemand(k, i, value);
-                cout << value << "    ";
+                data.insertDemand(k, i, value);
                 p = strtok(NULL, sep);
                 k++;
             }
@@ -184,18 +187,22 @@ int main(int argc, const char * argv[]) {
                 p = strtok(NULL, sep);
             sline.clear();
             i++;
-            
-            cout << endl;
         }
         td_file.close();
     }
     else
     {
-        cout << "File couldn't be open." << endl;
+        std::cout << "File couldn't be open." << std::endl;
         return 0;
     }
     
     delete p;
+
+    data.printDemand();
+    
+    data.printSolutionSet();
+    data.printLocalBest();
+    data.printGlobalBest();
     
     // data.generateSol();  // Generates initial sol
     //data.copyCurrentToBest();
@@ -217,6 +224,6 @@ int main(int argc, const char * argv[]) {
     
     // data.printData();
     
-    std::cout << endl << "Hello, Friend!\n";
+    std::cout << std::endl << "Hello, Friend!\n";
     return 0;
 }
