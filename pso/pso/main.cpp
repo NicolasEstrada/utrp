@@ -133,6 +133,7 @@ int main(int argc, const char * argv[]) {
                 {
                     value = atoi(p);
                     data.insertTime(k, i, value);
+                    data.insertAllowedNodes(k, i);
                 }
                 p = strtok(NULL, sep);
                 k++;
@@ -203,6 +204,16 @@ int main(int argc, const char * argv[]) {
     data.printSolutionSet();
     data.printLocalBest();
     data.printGlobalBest();
+    data.printAllowedNodes();
+    
+    std::cout << std::endl << data.isConnected(2, 5);
+    std::cout << std::endl << data.isConnected(1, 5);
+    std::cout << std::endl << data.isConnected(2, 3);
+    std::cout << std::endl;
+    std::cout << std::endl << data.isLinkedRoad(1, 2, 5);
+    std::cout << std::endl << data.isLinkedRoad(6, 3, 8);
+    std::cout << std::endl << data.isLinkedRoad(14, 3, 11);
+    std::cout << std::endl << data.isLinkedRoad(15, 6, 9);
     
     // data.generateSol();  // Generates initial sol
     //data.copyCurrentToBest();

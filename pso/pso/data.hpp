@@ -52,10 +52,20 @@ class Data{
     void printSolutionSet(void);
     void printLocalBest(void);
     void printGlobalBest(void);
+    void printAllowedNodes(void);
   
     // data initialization
     void insertTime(int x, int y, int time);
     void insertDemand(int x, int y, int demand);
+
+    // initial solution generation functions
+    void generateSolutionSet(void);
+  
+    // node-routes-solution tools
+    void insertAllowedNodes(int node, int allowed_node);
+
+    int isConnected(int node1, int node2);
+    int isLinkedRoad(int node1, int node2, int node3);
 
 };
 
@@ -208,6 +218,97 @@ void Data::printGlobalBest(void){
     
     std::cout << std::endl;
   }
+}
+
+
+void Data::printAllowedNodes(void){
+
+  int origin_node = 0, destination_node = 0, org_end = 0, dest_end = 0;
+  std::cout << std::setw((nNodes * 2) + 6) << "Allowed Nodes" << std::endl << std::endl;
+  
+  for (it2 = allowed.begin(); it2 != allowed.end(); it2++){
+    if (origin_node == 0){
+      origin_node = (*it2).first;
+      destination_node = (*it2).second;
+    }
+
+    if (origin_node != (*it2).first){
+      origin_node =(*it2).first;
+      org_end = 1;
+    }
+
+    if (destination_node != (*it2).second){
+    
+      destination_node = (*it2).second;
+      dest_end = 1;
+    }
+    
+    if (org_end && dest_end){
+      std::cout << std::endl;
+      org_end = 0;
+      dest_end = 0;
+    }
+    else{
+      org_end = 0;
+      dest_end = 0;
+    }
+    
+    std::cout << std::setw(2) << "( " << (*it2).first << ", " << (*it2).second << " ) ";
+  }
+}
+
+
+void Data::insertAllowedNodes(int node, int allowed_node){
+  
+  allowed.push_front(std::make_pair(node, allowed_node));
+}
+
+
+/** isConnected
+ *
+ * Return 0 if node1 isn't connected to node2
+ *
+ * @param node1, origin node
+ * @param node2, destination node
+ *
+ * return 1 if both nodes are connected, otherwise 0
+ */
+int Data::isConnected(int node1, int node2){
+  
+  for(it2 = allowed.begin(); it2 != allowed.end(); it2++){
+    int a = (*it2).first;
+    int b = (*it2).second;
+    if ((a == node1) && (b == node2))
+      return 1;
+  }
+  return 0;
+}
+
+/** isLinkedRoad
+ *
+ * Return 0 if node1, node2 and node 3 are not connected
+ *
+ * @param node1, origin node
+ * @param node2, intermediary node
+ * @param node3, destination node
+ *
+ * return 1 if the nodes are connected, otherwise 0
+ */
+int Data::isLinkedRoad(int node1, int node2, int node3){
+  
+  int first = 0, second = 0;
+  for(it2 = allowed.begin(); it2 != allowed.end(); it2++){
+    int a = (*it2).first;
+    int b = (*it2).second;
+    if ((a == node1) && (b == node2))
+      first = 1;
+    if ((a == node2) && (b == node3))
+      second = 1;
+  }
+  if (first && second)
+    return 1;
+  else
+    return 0;
 }
 
 #endif
