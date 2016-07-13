@@ -66,6 +66,18 @@ class Data{
 
     int isConnected(int node1, int node2);
     int isLinkedRoad(int node1, int node2, int node3);
+  
+    int alreadyExists(int particle, int route, int node);
+    int existsWithBeg(int particle, int route, int node);
+    int isFinished(int particle, int route, int node);
+    int previousConnection(int particle, int route, int node);
+    int nextConnection(int particle, int route, int node);
+  
+    int tourLen(int particle, int route);
+    int tourBegin(int particle, int route);
+    int tourEnd(int particle, int route);
+    int previousNode(int particle, int route, int node);
+    int indexNode(int particle, int route, int node);
 
 };
 
@@ -310,5 +322,170 @@ int Data::isLinkedRoad(int node1, int node2, int node3){
   else
     return 0;
 }
+
+
+/** alreadyExists
+ *
+ * Return 0 if the node isn't in the route
+ *
+ * @param particle, particle to look into
+ * @param route, route to look the node
+ * @param node, node to check
+ *
+ * return 1 if node is in route, otherwise 0
+ */
+int Data::alreadyExists(int particle, int route, int node){
+  int auxi;
+  
+  for (int i = 1; i <= nNodes; i++){
+    auxi = solutionSet[(particle - 1) * nRoutes * nNodes + (i - 1)];
+    if  (auxi > 0)
+      if (auxi == node || i == node)
+        return 1;
+
+  }
+
+  return 0;
+}
+
+
+/** existsWithBeg
+ *
+ */
+int Data::existsWithBeg(int particle, int route, int node){
+  
+  for (int i = 1; i <= nNodes; i++)
+    if (solutionSet[(particle - 1) * nRoutes * nNodes + (i - 1)] == node)
+      return 1;
+  
+  return 0;
+}
+
+
+/** isFinished
+ *
+ * Return 1 if Route can't be expanded
+ *
+ * @param particle, particle to lookup
+ * @param route, route to analize
+ * @param node, check if node has posibilities
+ *
+ * return 0 if route can't be continued, otherwise 1
+ */
+int Data::isFinished(int particle, int route, int node){
+  
+  for (it2 = allowed.begin(); it2 != allowed.end(); it2++){
+    int a = (*it2).first;
+    int b = (*it2).second;
+    if (a == node)
+      if ((!alreadyExists(particle, route, b)) && (indexNode(particle, route, node) != b))
+        return 0;
+  }
+
+  return 1;
+}
+
+
+/** previousConnection
+ *
+ */
+int Data::previousConnection(int particle, int route, int node){
+  
+  for (it2 = allowed.begin(); it2 != allowed.end(); it2++){
+    int a = (*it2).first;
+    int b = (*it2).second;
+    if (b == node)
+      if (!alreadyExists(particle, route, a))
+        return a;
+  }
+
+  return 0;
+}
+
+/** nextConnection
+ *
+ */
+int Data::nextConnection(int particle, int route, int node){
+
+  for (it2 = allowed.begin(); it2 != allowed.end(); it2++){
+    int a = (*it2).first;
+    int b = (*it2).second;
+    if (a == node)
+      if (!alreadyExists(particle, route, b))
+        return b;
+  }
+
+  return 0;
+}
+
+
+/** tourLen
+ *
+ */
+int Data::tourLen(int particle, int tour){
+  int len = 0;
+
+  for (int i = 1; i <= nNodes; i++)
+    if (solutionSet[(particle - 1) * nRoutes * nNodes + (i - 1)] > 0)
+      len += 1;
+  
+  if (len)
+    return len + 1;
+  else
+    return len;
+
+}
+
+
+/** tourBegin
+ *
+ */
+int Data::tourBegin(int particle, int route){
+
+  for (int i = 1; i <= nNodes; i++)
+    if (solutionSet[(particle - 1) * nRoutes * nNodes + (i - 1)] > 0)
+      if (!existsWithBeg(particle, route, i))
+        return i;
+
+  return 0;
+
+}
+
+
+/** tourEnd
+ *
+ */
+int Data::tourEnd(int particle, int route){
+  
+  for (int i = 1; i <= nNodes; i++)
+    if (solutionSet[(particle - 1) * nRoutes * nNodes + (i - 1)] == 0)
+      if (alreadyExists(particle, route, i))
+        return i;
+
+  return 0;
+}
+
+
+/** indexNode
+ *
+ * Return node pointing to argument node
+ *
+ * @param particle, particle to lookup
+ * @param route, route to analize
+ * @param node, node to find its parent
+ *
+ * return parent's node
+ */
+int Data::indexNode(int particle, int route, int node){
+  
+  for (int i = 1; i < nNodes; i++){
+    
+    if (solutionSet[(particle - 1) * nRoutes * nNodes + (i - 1)] == node)
+      return i;
+  }
+  
+  return 0;
+}
+
 
 #endif
