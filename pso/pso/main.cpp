@@ -234,6 +234,9 @@ int main(int argc, const char * argv[]) {
 //    }
     
     // data.printData();
+
+    data.generateSolutionSet();
+    data.printSolutionSet();
     
     std::cout << std::endl << "Hello, Friend!\n";
     return 0;

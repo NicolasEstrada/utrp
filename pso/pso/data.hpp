@@ -23,6 +23,8 @@
 
 //using namespace std;
 
+#include "functions.hpp"
+
 #define ITER_DEFAULT 1000
 
 class Data{
@@ -76,7 +78,7 @@ class Data{
     int tourLen(int particle, int route);
     int tourBegin(int particle, int route);
     int tourEnd(int particle, int route);
-    int previousNode(int particle, int route, int node);
+    int previousNode(int particle, int route, int node); // TODO
     int indexNode(int particle, int route, int node);
 
 };
@@ -266,6 +268,50 @@ void Data::printAllowedNodes(void){
     }
     
     std::cout << std::setw(2) << "( " << (*it2).first << ", " << (*it2).second << " ) ";
+  }
+}
+
+
+void Data::generateSolutionSet(void){
+  int auxNode = 0, valid = 0;
+  int j = 1;
+
+  for (int p = 1; p < populationSize; p++){
+    for (int i = 1; i < nRoutes; i ++){
+      // solution initialization for each particle
+    
+      for (int k = 1; k < nNodes; k++){
+      
+        if (!auxNode){
+          auxNode = nRand(nNodes);
+        }
+    
+        while (!valid){
+          j = nRand(nNodes);
+
+          if ((isConnected(auxNode, j))
+                && !(alreadyExists(p, i, j))
+                && (j != indexNode(p, i, auxNode))){
+            valid = 1;
+          }
+          else {
+            if (isFinished(p, i, auxNode)){
+              k = nNodes;
+              break;
+            }
+          }
+        }
+        
+        if (valid){
+          solutionSet[((p - 1) * populationSize * nRoutes * nNodes) + (i-1) * nRoutes + auxNode -1] = j;
+          auxNode = j;
+        }
+        
+        valid = 0;
+      }
+
+      auxNode = 0;
+    }
   }
 }
 
