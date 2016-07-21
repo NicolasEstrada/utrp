@@ -20,6 +20,7 @@
 #include <ctime>
 #include <cstdlib>
 #include <list>
+#include <unistd.h>
 
 //using namespace std;
 
@@ -75,12 +76,19 @@ class Data{
     int previousConnection(int particle, int route, int node);
     int nextConnection(int particle, int route, int node);
   
-    int tourLen(int particle, int route);
-    int tourBegin(int particle, int route);
-    int tourEnd(int particle, int route);
-    int previousNode(int particle, int route, int node); // TODO
+    int routeLen(int particle, int route);
+    int routeBegin(int particle, int route);
+    int routeEnd(int particle, int route);
+    int previousNode(int particle, int route, int node);
     int indexNode(int particle, int route, int node);
+    int indexRoute(int particle, int route);
+    int indexParticle(int particle);
 
+    int inEntireRed(int particle, int node);
+    int missingNode(int particle);
+    int shortestRoute(int particle);
+    void cleanRoute(int particle, int route);
+  
 };
 
 
@@ -189,14 +197,14 @@ void Data::printSolutionSet(void){
   
   std::cout << std::setw((nNodes * 2) + 6) << "Solution Set" << std::endl << std::endl;
   
-  for (int i = 0; i < populationSize; i++){
+  for (int i = 1; i <= populationSize; i++){
     
-    std::cout << "Particle # " << i +1 << std::endl;
+    std::cout << "Particle # " << i << std::endl;
 
-    for (int j = 0; j < nRoutes; j ++){
-      for (int k = 0; k < nNodes; k++){
+    for (int j = 1; j <= nRoutes; j++){
+      for (int k = 1; k <= nNodes; k++){
         
-        std::cout << std::setw(4) << solutionSet[((i * populationSize) + (j * nRoutes) + k)];
+        std::cout << std::setw(4) << solutionSet[indexNode(i, j, k)];
       }
       
       std::cout << std::endl;
@@ -273,14 +281,14 @@ void Data::printAllowedNodes(void){
 
 
 void Data::generateSolutionSet(void){
-  int auxNode = 0, valid = 0;
+  int auxNode = 0, valid = 0, m = 0;
   int j = 1;
 
-  for (int p = 1; p < populationSize; p++){
-    for (int i = 1; i < nRoutes; i ++){
+  for (int p = 1; p <= populationSize; p++){
+    for (int i = 1; i <= nRoutes; i ++){
       // solution initialization for each particle
     
-      for (int k = 1; k < nNodes; k++){
+      for (int k = 1; k <= nNodes; k++){
       
         if (!auxNode){
           auxNode = nRand(nNodes);
@@ -291,7 +299,7 @@ void Data::generateSolutionSet(void){
 
           if ((isConnected(auxNode, j))
                 && !(alreadyExists(p, i, j))
-                && (j != indexNode(p, i, auxNode))){
+                && (j != previousNode(p, i, auxNode))){
             valid = 1;
           }
           else {
@@ -301,9 +309,9 @@ void Data::generateSolutionSet(void){
             }
           }
         }
-        
+
         if (valid){
-          solutionSet[((p - 1) * populationSize * nRoutes * nNodes) + (i-1) * nRoutes + auxNode -1] = j;
+          solutionSet[indexNode(p, i, auxNode)] = j;
           auxNode = j;
         }
         
@@ -311,6 +319,55 @@ void Data::generateSolutionSet(void){
       }
 
       auxNode = 0;
+    }
+  }
+
+  valid = 0;
+  auxNode = 0;
+  j = 1;
+  
+  for (int p = 1; p <= populationSize; p++){
+    
+    m = missingNode(p);
+    int shortRoute = shortestRoute(p);
+    
+    while (m) {
+      
+      cleanRoute(p, shortRoute);
+      
+      for (int i = 1; i <= nNodes; i++){
+        
+        if (!auxNode)
+          auxNode = m;
+        while (!valid){
+          
+          j = nRand(nNodes);
+          
+          if ((isConnected(auxNode, j))
+              && !(alreadyExists(p, shortRoute, j))
+              && (j != previousNode(p, shortRoute, auxNode))){
+            valid = 1;
+          }
+          else {
+            if (isFinished(p, shortRoute, auxNode)){
+              i = nNodes;
+              break;
+            }
+          }
+          
+        }
+        
+        if (valid){
+
+          solutionSet[indexNode(p, shortRoute, auxNode)] = j;
+          auxNode = j;
+        }
+        
+        valid = 0;
+      }
+
+      auxNode = 0;
+      m = missingNode(p);
     }
   }
 }
@@ -384,7 +441,7 @@ int Data::alreadyExists(int particle, int route, int node){
   int auxi;
   
   for (int i = 1; i <= nNodes; i++){
-    auxi = solutionSet[(particle - 1) * nRoutes * nNodes + (i - 1)];
+    auxi = solutionSet[indexNode(particle, route, i)];
     if  (auxi > 0)
       if (auxi == node || i == node)
         return 1;
@@ -401,7 +458,7 @@ int Data::alreadyExists(int particle, int route, int node){
 int Data::existsWithBeg(int particle, int route, int node){
   
   for (int i = 1; i <= nNodes; i++)
-    if (solutionSet[(particle - 1) * nRoutes * nNodes + (i - 1)] == node)
+    if (solutionSet[indexNode(particle, route, i)] == node)
       return 1;
   
   return 0;
@@ -424,7 +481,7 @@ int Data::isFinished(int particle, int route, int node){
     int a = (*it2).first;
     int b = (*it2).second;
     if (a == node)
-      if ((!alreadyExists(particle, route, b)) && (indexNode(particle, route, node) != b))
+      if ((!alreadyExists(particle, route, b)) && (previousNode(particle, route, node) != b))
         return 0;
   }
 
@@ -465,14 +522,14 @@ int Data::nextConnection(int particle, int route, int node){
 }
 
 
-/** tourLen
+/** routeLen
  *
  */
-int Data::tourLen(int particle, int tour){
+int Data::routeLen(int particle, int route){
   int len = 0;
 
   for (int i = 1; i <= nNodes; i++)
-    if (solutionSet[(particle - 1) * nRoutes * nNodes + (i - 1)] > 0)
+    if (solutionSet[indexNode(particle, route, i)] > 0)
       len += 1;
   
   if (len)
@@ -483,13 +540,13 @@ int Data::tourLen(int particle, int tour){
 }
 
 
-/** tourBegin
+/** routeBegin
  *
  */
-int Data::tourBegin(int particle, int route){
+int Data::routeBegin(int particle, int route){
 
   for (int i = 1; i <= nNodes; i++)
-    if (solutionSet[(particle - 1) * nRoutes * nNodes + (i - 1)] > 0)
+    if (solutionSet[indexNode(particle, route, i)] > 0)
       if (!existsWithBeg(particle, route, i))
         return i;
 
@@ -498,13 +555,13 @@ int Data::tourBegin(int particle, int route){
 }
 
 
-/** tourEnd
+/** routeEnd
  *
  */
-int Data::tourEnd(int particle, int route){
+int Data::routeEnd(int particle, int route){
   
   for (int i = 1; i <= nNodes; i++)
-    if (solutionSet[(particle - 1) * nRoutes * nNodes + (i - 1)] == 0)
+    if (solutionSet[indexNode(particle, route, i)] == 0)
       if (alreadyExists(particle, route, i))
         return i;
 
@@ -512,7 +569,7 @@ int Data::tourEnd(int particle, int route){
 }
 
 
-/** indexNode
+/** previousNode
  *
  * Return node pointing to argument node
  *
@@ -522,15 +579,83 @@ int Data::tourEnd(int particle, int route){
  *
  * return parent's node
  */
-int Data::indexNode(int particle, int route, int node){
+int Data::previousNode(int particle, int route, int node){
   
-  for (int i = 1; i < nNodes; i++){
+  for (int i = 1; i <= nNodes; i++){
     
-    if (solutionSet[(particle - 1) * nRoutes * nNodes + (i - 1)] == node)
+    if (solutionSet[indexNode(particle, route, i)] == node)
       return i;
   }
   
   return 0;
+}
+
+int Data::indexNode(int particle, int route, int node){
+  return ((particle - 1) * nRoutes * nNodes
+          + (route - 1) * nNodes
+          + (node - 1));
+}
+
+
+int Data::indexRoute(int particle, int route){
+  return ((particle - 1) * nRoutes * nNodes
+          + (route -1) * nNodes);
+}
+
+
+int Data::indexParticle(int particle){
+  return ((particle - 1) * nRoutes * nNodes);
+}
+
+
+int Data::inEntireRed(int particle, int node){
+  
+  for (int i = 1; i <= nRoutes; i++){
+    
+    if (routeBegin(particle, i) == node)
+      return 1;  // node is beggining
+    
+    for (int j = 1; j <= nNodes; j++)
+      if (solutionSet[indexNode(particle, i, j)] == node)
+        return 1;  // node is part of the route
+  }
+
+  return 0;  // node not found
+}
+
+
+int Data::missingNode(int particle){
+
+  for (int i = 1; i <= nNodes; i++){
+    if (!inEntireRed(particle, i))
+      return i;
+  }
+  
+  return 0;
+}
+
+
+int Data::shortestRoute(int particle){
+  
+  int auxLen = nNodes + 1, auxIndexRoute = 0, currentLen = 0;
+
+  for (int i = 1; i <= nRoutes; i++){
+    
+     currentLen = routeLen(particle, i);
+    if (currentLen < auxLen){
+      auxLen = currentLen;
+      auxIndexRoute = i;
+    }
+  }
+      
+  return auxIndexRoute;
+}
+
+
+void Data::cleanRoute(int particle, int route){
+  
+  for (int i = 1; i <= nNodes; i++)
+    solutionSet[indexNode(particle, route, i)] = 0;
 }
 
 

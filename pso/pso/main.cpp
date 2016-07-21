@@ -32,7 +32,7 @@ int main(int argc, const char * argv[]) {
     char *p = nullptr, sep[] = " ";
     
     std::ifstream tp_file, tt_file, td_file;
-    std::ofstream fout, report;
+    // std::ofstream fout, report;
     
     if (argc != 8)
     {
@@ -82,7 +82,7 @@ int main(int argc, const char * argv[]) {
         }
         tp_file.close();
         
-        std::cout << "Nodes: " << nodes << ", Links: " << links << std::endl;
+        // std::cout << "Nodes: " << nodes << ", Links: " << links << std::endl;
     }
     else
     {
@@ -236,8 +236,8 @@ int main(int argc, const char * argv[]) {
     // data.printData();
 
     data.generateSolutionSet();
-    data.printSolutionSet();
+    // data.printSolutionSet();
     
-    std::cout << std::endl << "Hello, Friend!\n";
+    // std::cout << std::endl << "Hello, Friend!\n";
     return 0;
 }
