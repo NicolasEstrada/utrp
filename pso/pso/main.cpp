@@ -29,8 +29,9 @@ int main(int argc, const char * argv[]) {
     
     int i = 1, k = 1, nodes = 0, links = 0, value, populationSize, seed, routes;
     std::string sline, token, bs = "\n";
-    char *p = nullptr, sep[] = " ";
-    
+    // char *p = nullptr, sep[] = " ";
+    char *p = NULL, sep[] = " ";
+
     std::ifstream tp_file, tt_file, td_file;
     // std::ofstream fout, report;
     
@@ -236,8 +237,8 @@ int main(int argc, const char * argv[]) {
     // data.printData();
 
     data.generateSolutionSet();
-    // data.printSolutionSet();
+    data.printSolutionSet();
     
-    // std::cout << std::endl << "Hello, Friend!\n";
+    std::cout << std::endl << "Hello, Friend!\n";
     return 0;
 }

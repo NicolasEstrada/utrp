@@ -27,7 +27,8 @@
 #include "functions.hpp"
 
 #define ITER_DEFAULT 1000
-
+#define EMPTY -1
+#define INF 100
 class Data{
     
   private:
@@ -83,12 +84,29 @@ class Data{
     int indexNode(int particle, int route, int node);
     int indexRoute(int particle, int route);
     int indexParticle(int particle);
+    int indexTable(int node1, int node2);
 
     int inEntireRed(int particle, int node);
     int missingNode(int particle);
     int shortestRoute(int particle);
     void cleanRoute(int particle, int route);
-  
+
+    // FO Helpers
+
+    int firstInRoute(int particle, int route, int node1, int node2);
+    int getMinCost(int particle, int node1, int node2);
+
+    // FO functions
+
+    double getConsumerFO(int particle);
+    double getOperatorFO(int particle);
+
+
+    // PSO functions
+
+    void pso_method1(int particle);
+    // void pso_method2(int particle);
+    // void pso_iterate();
 };
 
 
@@ -144,8 +162,8 @@ void Data::setData(int n_nodes, int n_links, int n_routes, int population_size, 
   for (i=0; i < populationSize * nRoutes * nNodes; i++)
     solutionSet[i] = 0;
   
-  localBest = new int[nRoutes * nNodes];
-  for (i=0; i < nRoutes * nNodes; i++)
+  localBest = new int[populationSize * nRoutes * nNodes];
+  for (i=0; i < populationSize * nRoutes * nNodes; i++)
     localBest[i] = 0;
   
   globalBest = new int[nRoutes * nNodes];
@@ -209,6 +227,8 @@ void Data::printSolutionSet(void){
       
       std::cout << std::endl;
     }
+
+    std::cout << "OpCost = " << getOperatorFO(i) << ", ConsCost = " << getConsumerFO(i) << std::endl;
   }
 }
 
@@ -608,6 +628,11 @@ int Data::indexParticle(int particle){
 }
 
 
+int Data::indexTable(int node1, int node2) {
+  return ((node1 - 1) * nNodes + (node2 - 1));
+}
+
+
 int Data::inEntireRed(int particle, int node){
   
   for (int i = 1; i <= nRoutes; i++){
@@ -653,10 +678,135 @@ int Data::shortestRoute(int particle){
 
 
 void Data::cleanRoute(int particle, int route){
-  
+
   for (int i = 1; i <= nNodes; i++)
     solutionSet[indexNode(particle, route, i)] = 0;
 }
 
+
+// FO Helpers
+
+/**
+    *
+    * return int, first value of route.
+    */
+int Data::firstInRoute(int particle, int route, int node1, int node2){
+
+  int cursor, n1 = 0, n2 = 0;
+  cursor = routeBegin(particle, route);
+  while(cursor){
+    if (cursor == node1){
+      if (n2 != 0)
+        return n2;
+      else
+        n1 = node1;
+    }
+    if (cursor == node2)
+    {
+      if (n1 != 0)
+        return n1;
+      else
+        n2 = node2;
+    }
+    cursor = solutionSet[indexNode(particle, route, cursor)];
+  }
+  return 0;
+}
+
+/**
+    *
+    */
+int Data::getMinCost(int particle, int node1, int node2){
+
+  int cur, next, min_cost = 10000000, cost, t = 0;
+  cost = 0;
+  for (int i = 1; i <= nRoutes; i++){
+    cur = firstInRoute(particle, i, node1, node2);
+    // cout << i << " | " << cur << endl;
+    if (cur){
+      next = solutionSet[indexNode(particle, i, cur)];
+      while (cur && next){
+        t = timetable[indexTable(cur, next)];
+        // cout << cur << " | " << next << " = " << t << endl;
+        cost += t;
+        cur = next;
+        next = solutionSet[indexNode(particle, i, cur)];
+
+        if (next == node1 || next == node2)
+          break;
+      }
+      if ((cost < min_cost) && (cost != 0))
+        min_cost = cost;
+      cost = 0;
+    }
+  }
+
+  if (min_cost == 10000000)
+    return 0;
+  else
+    return min_cost;
+}
+
+
+
+// FO functions
+
+double Data::getConsumerFO(int particle) {
+
+  double cost = 0, total_demand = 0, auxCost = 0;
+
+  for (int i = 1; i <= nNodes; i++){
+
+    for (int j = 1; j <= i; j++){
+
+      if (i == j)
+        continue;
+
+      auxCost = getMinCost(particle, i, j);
+      if (auxCost){
+
+        cost += demandtable[indexTable(i, j)] * auxCost;
+      }
+      else {
+
+        cost += demandtable[indexTable(i, j)] * INF;
+      }
+
+      total_demand += demandtable[indexTable(i, j)];
+    }
+  }
+
+  return (double) cost / total_demand;
+}
+
+
+double Data::getOperatorFO(int particle){
+
+  int next = 0;
+  double cost = 0;
+
+  for (int i = 1; i <= nRoutes; i++){
+
+    for (int j = 1; j <= nNodes; j++){
+
+      next = solutionSet[indexNode(particle, i, j)];
+      if (next > 0){
+        cost += timetable[indexTable(j, next)];
+      }
+    }
+  }
+
+  return cost;
+}
+
+
+
+
+// PSO functions
+
+void Data::pso_method1(int particle) {
+
+
+}
 
 #endif
