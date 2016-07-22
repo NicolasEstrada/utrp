@@ -29,12 +29,17 @@
 #define ITER_DEFAULT 1000
 #define EMPTY -1
 #define INF 100
+#define MIN 3
+#define MAX 16
+
+
 class Data{
     
   private:
     
     int *timetable, *demandtable;
     int *solutionSet, *localBest, *globalBest;
+    double *localFO, globalFO;
     
   public:
     // default constructor
@@ -63,6 +68,7 @@ class Data{
     void insertDemand(int x, int y, int demand);
 
     // initial solution generation functions
+    void initBest(void);
     void generateSolutionSet(void);
   
     // node-routes-solution tools
@@ -85,6 +91,7 @@ class Data{
     int indexRoute(int particle, int route);
     int indexParticle(int particle);
     int indexTable(int node1, int node2);
+    int indexGBest(int route, int node);
 
     int inEntireRed(int particle, int node);
     int missingNode(int particle);
@@ -105,8 +112,8 @@ class Data{
     // PSO functions
 
     void pso_method1(int particle);
-    // void pso_method2(int particle);
-    // void pso_iterate();
+    void pso_method2(int particle);
+    void pso_iterate(void);
 };
 
 
@@ -119,6 +126,7 @@ Data::Data(){
   nRoutes = 0;
   populationSize = 0;
   seed = 0;
+  globalFO = 0;
 
   timetable = NULL;
   demandtable = NULL;
@@ -126,6 +134,7 @@ Data::Data(){
   localBest = NULL;
   globalBest = NULL;
 
+  localFO = NULL;
 }
 
 
@@ -136,6 +145,7 @@ Data::~Data(){
   delete [] solutionSet;
   delete [] localBest;
   delete [] globalBest;
+  delete [] localFO;
 
 }
 
@@ -169,7 +179,10 @@ void Data::setData(int n_nodes, int n_links, int n_routes, int population_size, 
   globalBest = new int[nRoutes * nNodes];
   for (i=0; i < nRoutes * nNodes; i++)
     globalBest[i] = 0;
-  
+
+  localFO = new double[populationSize];
+  for (i = 0; i < populationSize; i++)
+    localFO[i] = 0;
 }
 
 
@@ -236,14 +249,17 @@ void Data::printSolutionSet(void){
 void Data::printLocalBest(void){
   
   std::cout << std::setw((nNodes * 2) + 5) << "Local Best" << std::endl << std::endl;
-  
-  for (int i = 0; i < nRoutes; i ++){
-    for (int j = 0; j < nNodes; j++){
-      
-      std::cout << std::setw(4) << localBest[((i * nRoutes) + j)];
-    }
 
-    std::cout << std::endl;
+  for (int p = 1; p <= populationSize; p++) {
+    std::cout << "Particle # " << p << std::endl;
+    for (int i = 1; i <= nRoutes; i++) {
+      for (int j = 1; j <= nNodes; j++) {
+
+        std::cout << std::setw(4) << localBest[indexNode(p, i, j)];
+      }
+
+      std::cout << std::endl;
+    }
   }
 }
 
@@ -252,10 +268,10 @@ void Data::printGlobalBest(void){
   
   std::cout << std::setw((nNodes * 2) + 5) << "Global Best" << std::endl << std::endl;
   
-  for (int i = 0; i < nRoutes; i ++){
-    for (int j = 0; j < nNodes; j++){
+  for (int i = 1; i <= nRoutes; i ++){
+    for (int j = 1; j <= nNodes; j++){
       
-      std::cout << std::setw(4) << globalBest[((i * nRoutes) + j)];
+      std::cout << std::setw(4) << globalBest[indexGBest(i, j)];
     }
     
     std::cout << std::endl;
@@ -300,15 +316,40 @@ void Data::printAllowedNodes(void){
 }
 
 
+void Data::initBest(void) {
+
+  double currentFo = 0;
+
+  for (int  p = 1; p <= populationSize; p++){
+    for (int r = 1; r <= nRoutes; r++){
+      for (int n = 1; n <= nNodes; n++){
+
+        localBest[indexNode(p, r, n)] = solutionSet[indexNode(p, r, n)];
+      }
+    }
+    currentFo = getConsumerFO(p) + getOperatorFO(p);
+    localFO[p - 1] = currentFo;
+
+    if (globalFO == 0 || currentFo < globalFO) {
+
+      globalFO = currentFo;
+      for (int r = 1; r <= nRoutes; r++)
+        for (int n = 1; n <= nNodes; n++)
+          globalBest[indexGBest(r, n)] = solutionSet[indexNode(p, r, n)];
+    }
+  }
+}
+
+
 void Data::generateSolutionSet(void){
-  int auxNode = 0, valid = 0, m = 0;
+  int auxNode = 0, valid = 0, m = 0, k = 0, l = 0;
   int j = 1;
 
   for (int p = 1; p <= populationSize; p++){
-    for (int i = 1; i <= nRoutes; i ++){
+    for (int i = 1; i <= nRoutes; i++){
       // solution initialization for each particle
     
-      for (int k = 1; k <= nNodes; k++){
+      for (k = 1; k <= nNodes && routeLen(p, i) < MAX; k++){
       
         if (!auxNode){
           auxNode = nRand(nNodes);
@@ -324,7 +365,7 @@ void Data::generateSolutionSet(void){
           }
           else {
             if (isFinished(p, i, auxNode)){
-              k = nNodes;
+              k = nNodes + 1;
               break;
             }
           }
@@ -334,11 +375,16 @@ void Data::generateSolutionSet(void){
           solutionSet[indexNode(p, i, auxNode)] = j;
           auxNode = j;
         }
-        
+
         valid = 0;
       }
 
       auxNode = 0;
+      if (routeLen(p, i) < MIN || routeLen(p, i) > MAX) {
+        std::cout << "Route Len = " << routeLen(p, i) << std::endl;
+        k--;
+        cleanRoute(p, i);
+      }
     }
   }
 
@@ -349,13 +395,14 @@ void Data::generateSolutionSet(void){
   for (int p = 1; p <= populationSize; p++){
     
     m = missingNode(p);
-    int shortRoute = shortestRoute(p);
-    
+    // int shortRoute = shortestRoute(p);
+    int shortRoute = nRand(nRoutes);
+
     while (m) {
       
       cleanRoute(p, shortRoute);
       
-      for (int i = 1; i <= nNodes; i++){
+      for (l = 1; l <= nNodes && routeLen(p, shortRoute) < MAX; l++){
         
         if (!auxNode)
           auxNode = m;
@@ -370,7 +417,7 @@ void Data::generateSolutionSet(void){
           }
           else {
             if (isFinished(p, shortRoute, auxNode)){
-              i = nNodes;
+              l = nNodes + 1;
               break;
             }
           }
@@ -387,9 +434,15 @@ void Data::generateSolutionSet(void){
       }
 
       auxNode = 0;
+      if (routeLen(p, shortRoute) < MIN || routeLen(p, shortRoute) > MAX) {
+        l--;
+        cleanRoute(p, shortRoute);
+      }
       m = missingNode(p);
     }
   }
+
+  initBest();
 }
 
 
@@ -632,6 +685,10 @@ int Data::indexTable(int node1, int node2) {
   return ((node1 - 1) * nNodes + (node2 - 1));
 }
 
+int Data::indexGBest(int route, int node){
+  return ((route - 1) * nNodes + (node - 1));
+}
+
 
 int Data::inEntireRed(int particle, int node){
   
@@ -808,5 +865,18 @@ void Data::pso_method1(int particle) {
 
 
 }
+
+
+void Data::pso_method2(int particle) {
+
+
+}
+
+
+void Data::pso_iterate(void) {
+
+  return;
+}
+
 
 #endif

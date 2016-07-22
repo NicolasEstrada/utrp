@@ -27,7 +27,7 @@
 int main(int argc, const char * argv[]) {
     // main program, iterator and executor
     
-    int i = 1, k = 1, nodes = 0, links = 0, value, populationSize, seed, routes;
+    int i = 1, k = 1, nodes = 0, links = 0, value = 0, populationSize = 0, seed = 0, routes = 0, iterations = 0;
     std::string sline, token, bs = "\n";
     // char *p = nullptr, sep[] = " ";
     char *p = NULL, sep[] = " ";
@@ -35,9 +35,9 @@ int main(int argc, const char * argv[]) {
     std::ifstream tp_file, tt_file, td_file;
     // std::ofstream fout, report;
     
-    if (argc != 8)
+    if (argc != 9)
     {
-        std::cout << "Incorrect format: ./utrp tpX.txt ttX.txt tdX.txt outputFile nRoutes populationSize seed" << std::endl;
+        std::cout << "Incorrect format: ./utrp tpX.txt ttX.txt tdX.txt outputFile nRoutes populationSize seed iter" << std::endl;
         return 0;
     }
     
@@ -53,6 +53,7 @@ int main(int argc, const char * argv[]) {
     populationSize = atoi(argv[6]);
     seed = atoi(argv[7]);
     routes = atoi(argv[5]);
+    iterations = atoi(argv[8]);
 
     std::cout << "Seed: = " << seed << ", populationSize = " << populationSize << ", nRoutes = " << routes << std::endl;
     
@@ -238,7 +239,15 @@ int main(int argc, const char * argv[]) {
 
     data.generateSolutionSet();
     data.printSolutionSet();
-    
+    data.printGlobalBest();
+    data.printLocalBest();
+
+    for (int i = 1; i <= iterations; i++){
+
+      // std::cout << "Iter #: " << i << std::endl;
+      data.pso_iterate();
+    }
+
     std::cout << std::endl << "Hello, Friend!\n";
     return 0;
 }
