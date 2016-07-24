@@ -31,6 +31,8 @@
 #define INF 100
 #define MIN 3
 #define MAX 16
+// Method 1 numbers of retries looking common node
+#define M1_ITERS 9
 
 
 class Data{
@@ -107,12 +109,19 @@ class Data{
 
     double getConsumerFO(int particle);
     double getOperatorFO(int particle);
+    void refreshPopulationFO(int particle);
+    void refreshGlobalFO(int particle);
 
 
     // PSO functions
-
+    // Method 1 functions
     void pso_method1(int particle);
+    void cleanRouteFrom(int particle, int route, int node);
+    int getCommonBest(int particle, int routeP, int routeB);
+    int getCommonLocal(int particle, int routeP, int routeL);
+    // Method 2 functions
     void pso_method2(int particle);
+    // General purpose PSO functions
     void pso_iterate(void);
 };
 
@@ -857,19 +866,182 @@ double Data::getOperatorFO(int particle){
 }
 
 
-
-
 // PSO functions
-
 void Data::pso_method1(int particle) {
 
+  int commonNode = 0, routeP = 0, routeB = 0, found = 0;
+  int itB = 0, itP = 0, itAux = 0;
 
+
+  // against local best
+  for (int n = 1; n <= M1_ITERS && !found; n++){
+
+    routeP = nRand(nRoutes);
+    routeB = nRand(nRoutes);
+
+    commonNode = getCommonLocal(particle, routeP, routeB);
+
+    if (commonNode <= 0)
+      continue;
+
+    found = 1;
+    cleanRouteFrom(particle, routeP, commonNode);
+
+    itP = commonNode;
+    itB = localBest[indexNode(particle, routeB, commonNode)];
+    while(itB){
+
+      solutionSet[indexNode(particle, routeP, itP)] = itB;
+      itAux = itB;
+      itB = localBest[indexNode(particle, routeB, itAux)];
+    }
+  }
+
+  found = 0;
+  // against global best
+  for (int n = 1; n <= M1_ITERS && !found; n++){
+
+    routeP = nRand(nRoutes);
+    routeB = nRand(nRoutes);
+
+    commonNode = getCommonBest(particle, routeP, routeB);
+
+    if (commonNode <= 0)
+      continue;
+
+    found = 1;
+    cleanRouteFrom(particle, routeP, commonNode);
+
+    itP = commonNode;
+    itB = globalBest[indexGBest(routeB, commonNode)];
+    while(itB){
+
+      solutionSet[indexNode(particle, routeP, itP)] = itB;
+      itAux = itB;
+      itB = globalBest[indexGBest(routeB, itAux)];
+    }
+  }
+}
+
+
+void Data::cleanRouteFrom(int particle, int route, int node) {
+  int auxNode = 1, iterator = node;
+
+  while (1){
+
+    auxNode = solutionSet[indexNode(particle, route, iterator)];
+    solutionSet[indexNode(particle, route, iterator)] = 0;
+    iterator = auxNode;
+
+    if (iterator <= 0)
+      break;
+  }
+}
+
+
+int Data::getCommonBest(int particle, int routeP, int routeB) {
+
+  int iterator = 0, itBest = 0, circleExists = 0, gbNode = 0;
+
+  iterator = routeBegin(particle, routeP);
+
+  while (1){
+
+    for (int n = 1; n <= nNodes; n++){
+
+      if (globalBest[indexGBest(routeB, n)] == iterator) {
+
+        itBest = iterator;
+
+        // Verifying circle existence
+        while(itBest){
+          gbNode = globalBest[indexGBest(routeB, itBest)];
+          if (gbNode == 0)
+            break;
+
+          if (inEntireRed(gbNode)) {
+            circleExists = 1;
+            break;
+          }
+
+          if (!circleExists)
+            return iterator;
+          else {
+            circleExists = 0;
+            itBest = gbNode;
+          }
+        }
+      }
+    }
+
+    int auxIt = iterator;
+    iterator = solutionSet[indexNode(particle, routeP, auxIt)];
+    if (iterator <= 0)
+      return 0;
+  }
+}
+
+
+int Data::getCommonLocal(int particle, int routeP, int routeL) {
+
+  int iterator = 0, itlocal = 0, circleExists = 0, lbNode = 0;
+
+  iterator = routeBegin(particle, routeP);
+
+  while (1){
+
+    for (int n = 1; n <= nNodes; n++){
+
+      if (localBest[indexNode(particle, routeL, n)] == iterator) {
+
+        itlocal = iterator;
+
+        // Verifying circle existence
+        while(itlocal){
+          lbNode = localBest[indexNode(particle, routeL, itlocal)];
+          if (lbNode == 0)
+            break;
+
+          if (inEntireRed(lbNode)) {
+            circleExists = 1;
+            break;
+          }
+
+          if (!circleExists)
+            return iterator;
+          else {
+            circleExists = 0;
+            itlocal = lbNode;
+          }
+        }
+      }
+    }
+
+    int auxIt = iterator;
+    iterator = solutionSet[indexNode(particle, routeP, auxIt)];
+    if (iterator <= 0)
+      return 0;
+  }
 }
 
 
 void Data::pso_method2(int particle) {
 
+  int route1 = 0, route2 = 0;
 
+  // against local best
+  route1 = nRand(nRoutes);
+  route2 = nRand(nRoutes);
+
+  for (int n = 1; n <= nNodes; n++)
+    solutionSet[indexNode(particle, route1, n)] = localBest[indexNode(particle, route2, n)];
+
+  // against global best
+  route1 = nRand(nRoutes);
+  route2 = nRand(nRoutes);
+
+  for (int n = 1; n <= nNodes; n++)
+    solutionSet[indexNode(particle, route1, n)] = globalBest[indexGBest(route2, n)];
 }
 
 
