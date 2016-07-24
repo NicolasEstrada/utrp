@@ -242,10 +242,15 @@ int main(int argc, const char * argv[]) {
     data.printGlobalBest();
     data.printLocalBest();
 
+  std::cout << std::endl << std::endl << std::endl;
+
     for (int i = 1; i <= iterations; i++){
 
-      // std::cout << "Iter #: " << i << std::endl;
+      std::cout << "----- Iter #: " << i << " -----" << std::endl;
       data.pso_iterate();
+      data.printGlobalBest();
+      //data.printLocalBest();
+      std::cout << std::endl;
     }
 
     std::cout << std::endl << "Hello, Friend!\n";

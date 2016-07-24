@@ -41,7 +41,7 @@ class Data{
     
     int *timetable, *demandtable;
     int *solutionSet, *localBest, *globalBest;
-    double *localFO, globalFO;
+    double *localFO, globalFO, *populationFO;
     
   public:
     // default constructor
@@ -110,7 +110,8 @@ class Data{
     double getConsumerFO(int particle);
     double getOperatorFO(int particle);
     void refreshPopulationFO(int particle);
-    void refreshGlobalFO(int particle);
+    void refreshLocalFO(int particle);
+    void refreshGlobalFO();
 
 
     // PSO functions
@@ -144,6 +145,7 @@ Data::Data(){
   globalBest = NULL;
 
   localFO = NULL;
+  populationFO = NULL;
 }
 
 
@@ -155,6 +157,7 @@ Data::~Data(){
   delete [] localBest;
   delete [] globalBest;
   delete [] localFO;
+  delete [] populationFO;
 
 }
 
@@ -192,6 +195,10 @@ void Data::setData(int n_nodes, int n_links, int n_routes, int population_size, 
   localFO = new double[populationSize];
   for (i = 0; i < populationSize; i++)
     localFO[i] = 0;
+
+  populationFO = new double[populationSize];
+  for (i = 0; i < populationSize; i++)
+    populationFO[i] = 0;
 }
 
 
@@ -866,6 +873,46 @@ double Data::getOperatorFO(int particle){
 }
 
 
+void Data::refreshPopulationFO(int particle){
+  populationFO[particle - 1] = getOperatorFO(particle) + getConsumerFO(particle);
+}
+
+
+void Data::refreshLocalFO(int particle) {
+
+  if (populationFO[particle - 1] < localFO[particle - 1])
+  {
+    // updating local FO
+    localFO[particle - 1] = populationFO[particle - 1];
+
+    // updating best local solution
+    for (int r = 1; r <= nRoutes; r++)
+      for (int n = 1; n <= nNodes; n++)
+        localBest[indexNode(particle, r, n)] = solutionSet[indexNode(particle, r, n)];
+  }
+}
+
+
+void Data::refreshGlobalFO(void) {
+
+  int best = 0;
+
+  for (int p = 1; p <= populationSize; p++){
+    if (populationFO[p - 1] < globalFO)
+      best = p;
+  }
+
+  if (best){
+    // if there's a new best, replace FO and solution
+    globalFO = populationFO[best - 1];
+
+    for (int r = 1; r <= nRoutes; r++)
+      for (int n = 1; n <= nNodes; n++)
+        globalBest[indexGBest(r, n)] = solutionSet[indexNode(best, r, n)];
+  }
+}
+
+
 // PSO functions
 void Data::pso_method1(int particle) {
 
@@ -1047,7 +1094,14 @@ void Data::pso_method2(int particle) {
 
 void Data::pso_iterate(void) {
 
-  return;
+  for (int p = 1; p <= populationSize; p++){
+
+    pso_method1(p);
+    pso_method2(p);
+    refreshPopulationFO(p);
+    refreshLocalFO(p);
+  }
+  refreshGlobalFO();
 }
 
 
