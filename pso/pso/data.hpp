@@ -959,7 +959,7 @@ int Data::getCommonBest(int particle, int routeP, int routeB) {
           if (gbNode == 0)
             break;
 
-          if (inEntireRed(gbNode)) {
+          if (inEntireRed(particle, gbNode)) {
             circleExists = 1;
             break;
           }
@@ -1002,7 +1002,7 @@ int Data::getCommonLocal(int particle, int routeP, int routeL) {
           if (lbNode == 0)
             break;
 
-          if (inEntireRed(lbNode)) {
+          if (inEntireRed(particle, lbNode)) {
             circleExists = 1;
             break;
           }
