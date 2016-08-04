@@ -61,8 +61,10 @@ class Data{
     void printTime(void);
     void printDemand(void);
     void printSolutionSet(void);
+    void printParticleRoute(int particle, int route);
     void printLocalBest(void);
     void printGlobalBest(void);
+    void printGBRoute(int route);
     void printAllowedNodes(void);
   
     // data initialization
@@ -80,6 +82,7 @@ class Data{
     int isLinkedRoad(int node1, int node2, int node3);
   
     int alreadyExists(int particle, int route, int node);
+    int inRouteLimit(int particle, int route, int limit, int node);
     int existsWithBeg(int particle, int route, int node);
     int isFinished(int particle, int route, int node);
     int previousConnection(int particle, int route, int node);
@@ -121,6 +124,8 @@ class Data{
     void cleanRouteFrom(int particle, int route, int node);
     int getCommonBest(int particle, int routeP, int routeB);
     int getCommonLocal(int particle, int routeP, int routeL);
+    int isRepeated(int particle, int routeP);
+    void copyRouteTo(int particle, int route, int *aux);
     // Method 2 functions
     void pso_method2(int particle);
     // General purpose PSO functions
@@ -267,6 +272,25 @@ void Data::printSolutionSet(void){
 }
 
 
+void Data::printParticleRoute(int particle, int route){
+
+  int iterator = 1;
+  iterator = routeBegin(particle, route);
+
+  while (iterator){
+    if (solutionSet[indexNode(particle, route, iterator)] != 0) {
+      std::cout << iterator << " -> ";
+      iterator = solutionSet[indexNode(particle, route, iterator)];
+    }
+    else {
+      std::cout << iterator << " | " << std::endl;
+      break;
+    }
+  }
+}
+
+
+
 void Data::printLocalBest(void){
   
   std::cout << std::setw((nNodes * 2) + 5) << "Local Best" << std::endl << std::endl;
@@ -296,6 +320,25 @@ void Data::printGlobalBest(void){
     }
     
     std::cout << std::endl;
+  }
+}
+
+
+void Data::printGBRoute(int route){
+
+  int iterator = 0;
+  iterator = beginBest(route);
+
+  while(iterator){
+
+    if (globalBest[indexGBest(route, iterator)] != 0){
+      std::cout << iterator << " -> " ;
+      iterator = globalBest[indexGBest(route, iterator)];
+    }
+    else{
+      std::cout << iterator << " | " << std::endl;
+      break;
+    }
   }
 }
 
@@ -546,6 +589,30 @@ int Data::alreadyExists(int particle, int route, int node){
 }
 
 
+int Data::inRouteLimit(int particle, int route, int limit, int node){
+
+  int iterator = 0;
+
+  iterator = routeBegin(particle, route);
+
+  if (node == iterator || iterator == limit)
+    return 1;
+
+  while (iterator){
+
+    iterator = solutionSet[indexNode(particle, route, iterator)];
+
+    if (iterator != limit) {
+      if (node == iterator)
+        return 1;
+    }
+    else
+      return 0;
+  }
+
+}
+
+
 /** existsWithBeg
  *
  */
@@ -785,7 +852,6 @@ int Data::firstInRoute(int particle, int route, int node1, int node2){
   int cursor, n1 = 0, n2 = 0;
   cursor = routeBegin(particle, route);
   while(cursor){
-    std::cout << "Cur = " << cursor << ", node1 = " << node1 << ", node2 = " << node2 << std::endl;
     if (cursor == node1){
       if (n2 != 0)
         return n2;
@@ -817,7 +883,7 @@ int Data::getMinCost(int particle, int node1, int node2){
     if (cur){
       next = solutionSet[indexNode(particle, i, cur)];
       while (cur && next){
-        std::cout << "Cur = " << cur << ", Next = " << next << std::endl;
+        //// std::cout << "Cur = " << cur << ", Next = " << next << std::endl;
         t = timetable[indexTable(cur, next)];
         // cout << cur << " | " << next << " = " << t << endl;
         cost += t;
@@ -847,7 +913,7 @@ double Data::getConsumerFO(int particle) {
 
   double cost = 0, total_demand = 0, auxCost = 0;
 
-  std::cout << "Refresh PopFO2-Con1" << std::endl;
+  // std::cout << "Refresh PopFO2-Con1" << std::endl;
   for (int i = 1; i <= nNodes; i++){
 
     for (int j = 1; j <= i; j++){
@@ -856,9 +922,9 @@ double Data::getConsumerFO(int particle) {
         continue;
       }
 
-      std::cout << "Refresh PopFO2-Con2" << std::endl;
+      // std::cout << "Refresh PopFO2-Con2" << std::endl;
       auxCost = getMinCost(particle, i, j);
-      std::cout << "Refresh PopFO2-Con3" << std::endl;
+      // std::cout << "Refresh PopFO2-Con3" << std::endl;
       if (auxCost){
 
         cost += demandtable[indexTable(i, j)] * auxCost;
@@ -872,7 +938,7 @@ double Data::getConsumerFO(int particle) {
     }
   }
 
-  std::cout << "Refresh PopFO2-Con4" << std::endl;
+  // std::cout << "Refresh PopFO2-Con4" << std::endl;
   return (double) (cost / total_demand) + (countMissingNode(particle) * INF);
 }
 
@@ -882,7 +948,7 @@ double Data::getOperatorFO(int particle){
   int next = 0;
   double cost = 0;
 
-  std::cout << "Refresh PopFO2-OP1" << std::endl;
+  // std::cout << "Refresh PopFO2-OP1" << std::endl;
   for (int i = 1; i <= nRoutes; i++){
 
     for (int j = 1; j <= nNodes; j++){
@@ -899,7 +965,7 @@ double Data::getOperatorFO(int particle){
 
 
 void Data::refreshPopulationFO(int particle){
-  std::cout << "Refresh PopFO2" << std::endl;
+  // std::cout << "Refresh PopFO2" << std::endl;
   populationFO[particle - 1] = getOperatorFO(particle) + getConsumerFO(particle);
 }
 
@@ -945,6 +1011,11 @@ void Data::pso_method1(int particle) {
   int commonNode = 0, routeP = 0, routeB = 0, found = 0;
   int itB = 0, itP = 0, itAux = 0;
 
+  int *auxRoute;
+
+  auxRoute = new int[nNodes];
+  for (int i = 0; i < nNodes; i++)
+    auxRoute[i] = 0;
 
   // against local best
   for (int n = 1; n <= M1_ITERS && !found; n++){
@@ -959,6 +1030,20 @@ void Data::pso_method1(int particle) {
       continue;
 
     found = 1;
+    // printParticleRoute(particle, routeP);
+    copyRouteTo(particle, routeP, auxRoute);
+
+    /* for (int x = 0; x < nNodes; x++){
+
+      if (x == nNodes -1)
+        std::cout << auxRoute[x] << " | " << std::endl;
+      else
+        std::cout << auxRoute[x] << " -> ";
+    }*/
+
+    // unsigned int microseconds = 10000000;
+    // usleep(microseconds);
+
     cleanRouteFrom(particle, routeP, commonNode);
 
     itP = commonNode;
@@ -968,6 +1053,13 @@ void Data::pso_method1(int particle) {
       solutionSet[indexNode(particle, routeP, itP)] = itB;
       itAux = itB;
       itB = localBest[indexNode(particle, routeB, itAux)];
+    }
+
+    if (isRepeated(particle, routeP)) {
+      found = 0;
+      for (int n = 1; n <= nNodes; n++){
+        solutionSet[indexNode(particle, routeP, n)] = auxRoute[n - 1];
+      }
     }
   }
 
@@ -980,29 +1072,59 @@ void Data::pso_method1(int particle) {
 
     commonNode = getCommonBest(particle, routeP, routeB);
 
+    copyRouteTo(particle, routeP, auxRoute);
+
+    /* for (int x = 0; x < nNodes; x++){
+
+      if (x == nNodes -1)
+        std::cout << auxRoute[x] << " | " << std::endl;
+      else
+        std::cout << auxRoute[x] << " -> ";
+    } */
+
+    // unsigned int microseconds = 10000000;
+    // usleep(microseconds);
+
     if (commonNode <= 0)
       continue;
 
-    std::cout << "a. " << std::endl;
     found = 1;
+    // printParticleRoute(particle, routeP);
+    // printGBRoute(routeB);
+
+    copyRouteTo(particle, routeP, auxRoute);
+
+    /* for (int x = 0; x < nNodes; x++){
+
+      if (x == nNodes -1)
+        std::cout << auxRoute[x] << " | " << std::endl;
+      else
+        std::cout << auxRoute[x] << " -> ";
+    } */
+
+    // unsigned int microseconds = 10000000;
+    // usleep(microseconds);
+
     cleanRouteFrom(particle, routeP, commonNode);
-    std::cout << "b. " << std::endl;
 
     itP = commonNode;
     itB = globalBest[indexGBest(routeB, commonNode)];
-    std::cout << "c. " << std::endl;
-    while(itB){
-      std::cout << "d. = " << itB << std::endl;
 
+    while(itB){
       solutionSet[indexNode(particle, routeP, itP)] = itB;
-      std::cout << "e. = " << itB << std::endl;
       itAux = itB;
       itB = globalBest[indexGBest(routeB, itAux)];
-      std::cout << "f. = " << itB << std::endl;
     }
-    std::cout << "g. = " << itB << std::endl;
+
+    if (isRepeated(particle, routeP)) {
+      found = 0;
+      for (int n = 1; n <= nNodes; n++){
+        solutionSet[indexNode(particle, routeP, n)] = auxRoute[n - 1];
+      }
+    }
   }
-  std::cout << "h. = " << itB << std::endl;
+
+  delete [] auxRoute;
 }
 
 
@@ -1079,11 +1201,8 @@ int Data::getCommonBest(int particle, int routeP, int routeB) {
       // std::cout << "iterator = " << iterator << std::endl;
     }
 
-    std::cout << "1" << std::endl;
     while (iterator && itBest) {
-      std::cout << "2: " << iterator << std::endl;
       if (iterator == itBest) {
-        std::cout << "3" << std::endl;
         gbNode = itBest;
 
         iterator = routeBegin(particle, routeP);
@@ -1092,37 +1211,33 @@ int Data::getCommonBest(int particle, int routeP, int routeB) {
           return 0;
 
         while (iterator != gbNode) {
-          std::cout << "4" << std::endl;
           while (itBest > 0) {
-            std::cout << "5 = " << itBest << std::endl;
             itBest = globalBest[indexGBest(routeB, itBest)];
-            std::cout << "6 = " << itBest << std::endl;
+            if (inRouteLimit(particle, routeP, iterator, itBest)){
+              hasCircle = 1;
+              break;
+            }
             if (itBest == iterator) {
               hasCircle = 1;
               break;
             }
           }
-          std::cout << "7 = " << itBest << std::endl;
 
           if (!hasCircle) {
-            std::cout << "8a = " << itBest << ", gbNode = " << gbNode << std::endl;
             return gbNode;
           }
           else {
-            std::cout << "8b = " << itBest << std::endl;
             iterator = solutionSet[indexNode(particle, routeP, gbNode)];
             itBest = globalBest[indexGBest(routeB, gbNode)];
             hasCircle = 0;
             break;
           }
         }
-        std::cout << "9 = " << itBest << std::endl;
       }
       else {
         iterator = solutionSet[indexNode(particle, routeP, iterator)];
         itBest = globalBest[indexGBest(routeB, itBest)];
       }
-      std::cout << "10 = " << itBest << std::endl;
     }
   }
 
@@ -1205,6 +1320,12 @@ int Data::getCommonLocal(int particle, int routeP, int routeL) {
           while (itlocal > 0) {
             // std::cout << "5" << std::endl;
             itlocal = localBest[indexNode(particle, routeL, itlocal)];
+
+            if (inRouteLimit(particle, routeP, iterator, itlocal)){
+              hasCircle = 1;
+              break;
+            }
+
             if (itlocal == iterator) {
               hasCircle = 1;
               break;
@@ -1232,23 +1353,92 @@ int Data::getCommonLocal(int particle, int routeP, int routeL) {
 }
 
 
+int Data::isRepeated(int particle, int routeP){
+
+  int beginAux = 0, beginP = 0;
+
+  for (int r = 1; r <= nRoutes; r++){
+
+    if (r == routeP)
+      continue;
+
+    beginAux = routeBegin(particle, r);
+    beginP = routeBegin(particle, routeP);
+
+    while(beginAux && beginP){
+
+      if (beginAux != beginP)
+        return 0;
+
+      beginAux = solutionSet[indexNode(particle, r, beginAux)];
+      beginP = solutionSet[indexNode(particle, routeP, beginP)];
+    }
+
+    if (beginAux != beginP)
+      return 0;
+    else
+      return 1;
+  }
+}
+
+
+void Data::copyRouteTo(int particle, int route, int *aux) {
+
+  for (int n = 1; n <= nNodes; n++)
+    aux[n - 1] = solutionSet[indexNode(particle, route, n)];
+}
+
+
 void Data::pso_method2(int particle) {
 
-  int route1 = 0, route2 = 0;
+  int route1 = 0, route2 = 0, retries = 0;
+  int *auxRoute;
+
+  auxRoute = new int[nNodes];
 
   // against local best
-  route1 = nRand(nRoutes);
-  route2 = nRand(nRoutes);
+  while (retries < nRoutes) {
+    route1 = nRand(nRoutes);
+    route2 = nRand(nRoutes);
 
-  for (int n = 1; n <= nNodes; n++)
-    solutionSet[indexNode(particle, route1, n)] = localBest[indexNode(particle, route2, n)];
+    copyRouteTo(particle, route1, auxRoute);
+    for (int n = 1; n <= nNodes; n++)
+      solutionSet[indexNode(particle, route1, n)] = localBest[indexNode(particle, route2, n)];
+
+    if (isRepeated(particle, route1)) {
+      for (int n = 1; n <= nNodes; n++) {
+        solutionSet[indexNode(particle, route1, n)] = auxRoute[n - 1];
+      }
+    }
+    else{
+      retries = nRoutes;
+    }
+
+    retries += 1;
+  }
 
   // against global best
-  route1 = nRand(nRoutes);
-  route2 = nRand(nRoutes);
 
-  for (int n = 1; n <= nNodes; n++)
-    solutionSet[indexNode(particle, route1, n)] = globalBest[indexGBest(route2, n)];
+  retries = 0;
+  while(retries < nRoutes) {
+    route1 = nRand(nRoutes);
+    route2 = nRand(nRoutes);
+
+    copyRouteTo(particle, route1, auxRoute);
+    for (int n = 1; n <= nNodes; n++)
+      solutionSet[indexNode(particle, route1, n)] = globalBest[indexGBest(route2, n)];
+
+    if (isRepeated(particle, route1)) {
+      for (int n = 1; n <= nNodes; n++) {
+        solutionSet[indexNode(particle, route1, n)] = auxRoute[n - 1];
+      }
+    }
+    else{
+      retries = nRoutes;
+    }
+  }
+
+  delete [] auxRoute;
 }
 
 
@@ -1256,13 +1446,9 @@ void Data::pso_iterate(void) {
 
   for (int p = 1; p <= populationSize; p++){
 
-    std::cout << "Method 1" << std::endl;
     pso_method1(p);
-    std::cout << "Method 2" << std::endl;
     pso_method2(p);
-    std::cout << "Refresh PopFO" << std::endl;
     refreshPopulationFO(p);
-    std::cout << "Refresh LocalFO" << std::endl;
     refreshLocalFO(p);
   }
   std::cout << "Refresh GlobalFO" << std::endl;
