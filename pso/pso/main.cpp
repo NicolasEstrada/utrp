@@ -48,14 +48,14 @@ int main(int argc, const char * argv[]) {
         return 0;
     }
     
-    std::cout << "General Paramenters:" << std::endl;
+    // std::cout << "General Paramenters:" << std::endl;
 
     populationSize = atoi(argv[6]);
     seed = atoi(argv[7]);
     routes = atoi(argv[5]);
     iterations = atoi(argv[8]);
 
-    std::cout << "Seed: = " << seed << ", populationSize = " << populationSize << ", nRoutes = " << routes << std::endl;
+    // std::cout << "Seed: = " << seed << ", populationSize = " << populationSize << ", nRoutes = " << routes << std::endl;
     
     // Open parameters file (nodes, links)
     if (tp_file.is_open())
@@ -97,8 +97,8 @@ int main(int argc, const char * argv[]) {
     
     data.setData(nodes, links, routes, populationSize, seed);
     
-    data.printTime();
-    data.printDemand();
+    // data.printTime();
+    // data.printDemand();
     
     // Open time matrix (transport time between allowed nodes)
     tt_file.open(argv[2]);
@@ -154,7 +154,7 @@ int main(int argc, const char * argv[]) {
         return 0;
     }
 
-    data.printTime();
+    // data.printTime();
     
     i = 1;
     // Open time matrix (transport demand between nodes)
@@ -201,8 +201,9 @@ int main(int argc, const char * argv[]) {
     
     delete p;
 
+    /*
     data.printDemand();
-    
+
     data.printSolutionSet();
     data.printLocalBest();
     data.printGlobalBest();
@@ -216,7 +217,7 @@ int main(int argc, const char * argv[]) {
     std::cout << std::endl << data.isLinkedRoad(6, 3, 8);
     std::cout << std::endl << data.isLinkedRoad(14, 3, 11);
     std::cout << std::endl << data.isLinkedRoad(15, 6, 9);
-    
+    */
     // data.generateSol();  // Generates initial sol
     //data.copyCurrentToBest();
     
@@ -238,21 +239,23 @@ int main(int argc, const char * argv[]) {
     // data.printData();
 
     data.generateSolutionSet();
-    data.printSolutionSet();
-    data.printGlobalBest();
-    data.printLocalBest();
+    // data.printSolutionSet();
+    // data.printGlobalBest();
+    // data.printLocalBest();
 
   std::cout << std::endl << std::endl << std::endl;
 
     for (int i = 1; i <= iterations; i++){
 
-      std::cout << "----- Iter #: " << i << " -----" << std::endl;
+      // std::cout << "----- Iter #: " << i << " -----" << std::endl;
       data.pso_iterate();
-      data.printGlobalBest();
-      //data.printLocalBest();
-      std::cout << std::endl;
+      data.printSolutionSet();
+
+      // data.printLocalBest();
+      // std::cout << std::endl;
     }
 
-    std::cout << std::endl << "Hello, Friend!\n";
+    // data.printGlobalBest();
+    // std::cout << std::endl << "Hello, Friend!\n";
     return 0;
 }

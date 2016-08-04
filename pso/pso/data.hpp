@@ -251,11 +251,11 @@ void Data::insertDemand(int x, int y, int demand){
 
 
 void Data::printSolutionSet(void){
-  
-  std::cout << std::setw((nNodes * 2) + 6) << "Solution Set" << std::endl << std::endl;
+
+  // std::cout << std::setw((nNodes * 2) + 6) << "Solution Set" << std::endl << std::endl;
   
   for (int i = 1; i <= populationSize; i++){
-    
+    /*
     std::cout << "Particle # " << i << std::endl;
 
     for (int j = 1; j <= nRoutes; j++){
@@ -265,9 +265,10 @@ void Data::printSolutionSet(void){
       }
       
       std::cout << std::endl;
-    }
+    }*/
 
-    std::cout << "OpCost = " << getOperatorFO(i) << ", ConsCost = " << getConsumerFO(i) << std::endl;
+    // std::cout << "OpCost = " << getOperatorFO(i) << ", ConsCost = " << getConsumerFO(i) << std::endl;
+    std::cout << getOperatorFO(i) << "," << getConsumerFO(i) << std::endl;
   }
 }
 
@@ -1451,9 +1452,9 @@ void Data::pso_iterate(void) {
     refreshPopulationFO(p);
     refreshLocalFO(p);
   }
-  std::cout << "Refresh GlobalFO" << std::endl;
+  // std::cout << "Refresh GlobalFO" << std::endl;
   refreshGlobalFO();
-  std::cout << "Global Best FO = " << globalFO << std::endl;
+  // std::cout << "Global Best FO = " << globalFO << std::endl;
 }
 
 /*
